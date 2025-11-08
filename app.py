@@ -2,6 +2,9 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room
 import random
 import string
+import json
+import os
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a-very-secret-key'
@@ -9,6 +12,8 @@ socketio = SocketIO(app)
 
 # In-memory storage for lobbies
 LOBBIES = {}
+ARCHIVE_DIR = "archived_lobbies"
+os.makedirs(ARCHIVE_DIR, exist_ok=True)
 
 def generate_lobby_code(length=8):
     """Generate a unique, random, all-caps alphanumeric code."""
@@ -155,6 +160,49 @@ def calculate_midpoint(points):
     lat = atan2(z, hyp)
     
     return {'lat': degrees(lat), 'lon': degrees(lon)}
+
+
+def save_lobby_to_file(lobby_code):
+    """Saves a lobby's state to a JSON file and removes it from memory."""
+    if lobby_code not in LOBBIES:
+        print(f"Cannot save: Lobby {lobby_code} not found.")
+        return False
+
+    lobby_data = LOBBIES[lobby_code]
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{ARCHIVE_DIR}/{lobby_code}_{timestamp}.json"
+
+    try:
+        with open(filename, "w") as f:
+            json.dump(lobby_data, f, indent=2)
+        print(f"Lobby {lobby_code} archived as {filename}")
+        del LOBBIES[lobby_code]  # remove from active memory
+        return True
+    except Exception as e:
+        print(f"Error saving lobby {lobby_code}: {e}")
+        return False
+
+
+def load_archived_lobby(lobby_code):
+    """Loads an archived lobby from a JSON file into active memory."""
+    # find the most recent archive for this code
+    files = [f for f in os.listdir(ARCHIVE_DIR) if f.startswith(lobby_code)]
+    if not files:
+        print(f"No archived sessions found for lobby {lobby_code}")
+        return False
+
+    latest_file = max(files, key=lambda f: os.path.getmtime(os.path.join(ARCHIVE_DIR, f)))
+    filepath = os.path.join(ARCHIVE_DIR, latest_file)
+
+    try:
+        with open(filepath, "r") as f:
+            lobby_data = json.load(f)
+        LOBBIES[lobby_code] = lobby_data
+        print(f"Lobby {lobby_code} restored from {filepath}")
+        return True
+    except Exception as e:
+        print(f"Error loading lobby {lobby_code}: {e}")
+        return False
 
 
 if __name__ == '__main__':
