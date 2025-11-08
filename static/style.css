@@ -78,3 +78,22 @@ p {
     100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+#lobby-code-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+#lobby-code {
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #4dffff;
+}
+
