@@ -127,7 +127,8 @@ def emit_lobby_update(lobby_code):
         'code': lobby_code,
         'participants': list(lobby['participants'].keys()),
         'points': lobby['points'],
-        'midpoint': midpoint
+        'midpoint': midpoint,
+        'messages': lobby.get('messages', [])
     }
     socketio.emit('lobby_update', payload, room=lobby_code)
     print(f"Sent update for lobby {lobby_code}: {payload}")
@@ -205,6 +206,24 @@ def load_archived_lobby(lobby_code):
     except Exception as e:
         print(f"Error loading lobby {lobby_code}: {e}")
         return False
+    
+@socketio.on('chat_message')
+def on_chat(data):
+    lobby_code = data.get('code')
+    name = data.get('name', 'Anon')
+    text = data.get('text', '').strip()
+    if not text:
+        return
+    if lobby_code not in LOBBIES:
+        return
+    message = {'name': name, 'text': text}
+    LOBBIES[lobby_code].setdefault('messages', []).append(message)
+    emit_lobby_update(lobby_code)
+
+
+@app.route('/debug')
+def api_debug():
+    return render_template('api_debug.html')
 
 
 if __name__ == '__main__':

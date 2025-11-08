@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Meet Halfway - Dashboard + Chat</title>
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    .flex { display: flex; gap: 20px; }
+    .box { border: 1px solid #ccc; padding: 10px; border-radius: 10px; width: 45%; }
+    pre { background: #f5f5f5; padding: 10px; }
+    #chat { border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px; }
+    #messages { height: 150px; overflow-y: auto; background: #f0f0f0; padding: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Meet Halfway - Real-Time Test with Chat</h1>
+  <div>
+    <input id="name" placeholder="Your name" />
+    <input id="lobby_code" placeholder="Lobby Code (optional)" />
+    <button onclick="joinLobby()">Create / Join Lobby</button>
+  </div>
+  <p id="status"></p>
+
+  <div class="flex">
+    <div class="box">
+      <h3>Current Lobby Details</h3>
+      <pre id="current"></pre>
+      <div id="chat">
+        <h4>Chat</h4>
+        <div id="messages"></div>
+        <input id="chatInput" placeholder="Type a message..." style="width:80%" />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let lobby_code = null;
+    let user_id = null;
+    let name = null;
+
+    function generateUserId(length = 8) {
+        return Math.random().toString(36).substring(2, 2 + length);
+    }
+
+    async function joinLobby() {
+      const codeInput = document.getElementById('lobby_code').value;
+      name = document.getElementById('name').value || 'Anon';
+      user_id = generateUserId();
+
+      if (!codeInput) {
+        const res = await fetch('/create_lobby', {method: 'POST'});
+        const js = await res.json();
+        lobby_code = js.code;
+        document.getElementById('lobby_code').value = lobby_code;
+      } else {
+        lobby_code = codeInput;
+      }
+      
+      document.getElementById('status').innerText = `Joined lobby ${lobby_code} as ${name} (${user_id})`;
+      socket.emit('join_lobby', {code: lobby_code, userId: user_id});
+
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(pos => {
+          const {latitude, longitude} = pos.coords;
+          socket.emit('add_point', {code: lobby_code, userId: user_id, point: {lat: latitude, lon: longitude}});
+        });
+      }
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (text && lobby_code && user_id) {
+        socket.emit('chat_message', {code: lobby_code, userId: user_id, name, text});
+        input.value = '';
+      }
+    }
+
+    socket.on('lobby_update', data => {
+      if (data.code === lobby_code) {
+        document.getElementById('current').innerText = JSON.stringify(data, null, 2);
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+        (data.messages || []).forEach(m => {
+          const p = document.createElement('div');
+          p.textContent = `[${m.name}] ${m.text}`;
+          messagesDiv.appendChild(p);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+    });
+  </script>
+</body>
+</html>
