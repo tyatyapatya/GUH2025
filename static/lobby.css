@@ -1,0 +1,200 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: #030712; /* match main menu dark blue */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Orbitron', sans-serif;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+}
+
+.container {
+    z-index: 1;
+}
+
+h1 {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #0077ff, 0 0 40px #0077ff, 0 0 50px #0077ff, 0 0 60px #0077ff, 0 0 70px #0077ff;
+}
+
+.buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Wrapper for ripple effect to manage stacking cleanly */
+.btn-wrap {
+  position: relative;
+  display: inline-block;
+  /* Use a shared radius variable so wrapper, button, and ripple match exactly */
+  --btn-radius: 9999px; /* pill shape regardless of width */
+  border-radius: var(--btn-radius);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+    padding: 15px 30px;
+    background: rgba(17, 24, 39, 0.95);
+    border: 1px solid #374151;
+    backdrop-filter: blur(6px);
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+    background-color: transparent;
+    border-radius: var(--btn-radius);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+  position: relative;
+    overflow: visible; /* keep rings visible outside */
+  z-index: 1; /* ensure button content sits above wrapper ripples */
+}
+
+/* Remove underline from anchor buttons in all states */
+.btn,
+.btn:link,
+.btn:visited,
+.btn:hover,
+.btn:active,
+.btn:focus {
+  text-decoration: none;
+}
+
+.btn:hover {
+    background-color: #00aaff;
+    border: 1px solid #00aaff;
+    color: #000;
+    box-shadow: 0 0 20px #00aaff, inset 0 0 10px #00aaff;
+}
+
+/* Ring settings (tweak as needed) */
+:root {
+  --lobby-ring-color: #00aaff;   /* match your .btn hover color */
+  --lobby-ring-width: 2px;       /* ring stroke */
+  --lobby-ring-duration: 1.1s;   /* animation speed */
+}
+
+/* Two staggered rings for a continuous ripple (on wrapper) */
+.btn-wrap::before,
+.btn-wrap::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--lobby-ring-width)); /* expand to align ring with button outer edge */
+  box-sizing: border-box; /* keep ring aligned to edges */
+  transform: scale(1);
+  transform-origin: center;
+  border-radius: calc(var(--btn-radius) + var(--lobby-ring-width)); /* keep arcs aligned */
+  border: var(--lobby-ring-width) solid var(--lobby-ring-color);
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px var(--lobby-ring-color));
+  z-index: 0; /* behind the button */
+}
+
+.btn-wrap:hover::before {
+  opacity: 0.6;
+  animation: ringPulseOval var(--lobby-ring-duration) ease-out infinite;
+}
+
+.btn-wrap:hover::after {
+  opacity: 0.6;
+  animation: ringPulseOval var(--lobby-ring-duration) ease-out infinite;
+  animation-delay: calc(var(--lobby-ring-duration) / 3);
+}
+
+/* Oval pulse that respects the button's border-radius and aspect ratio */
+@keyframes ringPulseOval {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Respect reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .btn-wrap:hover::before,
+  .btn-wrap:hover::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Modal styles */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.7); 
+}
+
+.modal-content {
+    background-color: #000;
+    margin: 15% auto; 
+    padding: 20px;
+    border: 2px solid #00aaff;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 0 20px #00aaff;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#lobbyCodeInput {
+    width: calc(100% - 40px);
+    padding: 10px;
+    margin: 20px 0;
+    border: 1px solid #00aaff;
+    background-color: #111;
+    color: white;
+    font-size: 1rem;
+    border-radius: 5px;
+}
+
+#joinLobbySubmit {
+    padding: 15px 30px;
+    text-decoration: none;
+    color: white;
+    background-color: transparent;
+    border: 2px solid #00aaff;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px #00aaff, inset 0 0 10px #00aaff;
+    cursor: pointer;
+}
+
+#joinLobbySubmit:hover {
+    background-color: #00aaff;
+    color: #000;
+    box-shadow: 0 0 20px #00aaff, inset 0 0 10px #00aaff;
+}
