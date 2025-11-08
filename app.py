@@ -5,6 +5,7 @@ import string
 import json
 import os
 from datetime import datetime
+import threading
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a-very-secret-key'
@@ -13,6 +14,8 @@ socketio = SocketIO(app)
 # In-memory storage for lobbies
 LOBBIES = {}
 ARCHIVE_DIR = "archived_lobbies"
+ARCHIVE_TIMERS = {}  # Track pending archive timers
+ARCHIVE_DELAY = 20  # seconds to wait before archiving inactive lobbies
 os.makedirs(ARCHIVE_DIR, exist_ok=True)
 
 def generate_lobby_code(length=8):
@@ -71,8 +74,44 @@ def on_join(data):
     
     print(f"User {user_id} joined lobby {lobby_code}")
 
+    # Cancel any pending archive
+    cancel_lobby_archive(lobby_code)
     # Notify everyone in the lobby about the current state
     emit_lobby_update(lobby_code)
+
+@socketio.on('leave_lobby')
+def on_leave(data):
+    """Handles a user voluntarily leaving a lobby."""
+    lobby_code = data.get('code')
+    user_id = data.get('userId')
+
+    if not lobby_code or not user_id:
+        print("Leave failed: Missing lobby_code or userId")
+        return
+
+    if lobby_code not in LOBBIES:
+        print(f"Leave failed: Lobby {lobby_code} not found.")
+        return
+
+    lobby = LOBBIES[lobby_code]
+
+    # Remove user completely
+    if user_id in lobby['participants']:
+        del lobby['participants'][user_id]
+        print(f"User {user_id} removed from lobby {lobby_code}.")
+    if user_id in lobby['points']:
+        del lobby['points'][user_id]
+        print(f"User {user_id}'s point removed from lobby {lobby_code}.")
+
+    leave_room(lobby_code)
+
+    # If no one remains, schedule auto-archive
+    if len(lobby['participants']) == 0:
+        print(f"Lobby {lobby_code} is empty — scheduling archive in {ARCHIVE_DELAY} seconds.")
+        schedule_lobby_archive(lobby_code)
+
+    emit_lobby_update(lobby_code)
+
 
 @socketio.on('add_point')
 def on_add_point(data):
@@ -99,20 +138,43 @@ def on_disconnect():
                 break
 
         if user_id_to_update:
-            # Instead of removing the user, we can just note the disconnection
-            # or handle it more gracefully, e.g., by setting them as 'inactive'.
-            # For a refresh, they will rejoin immediately with a new SID.
-            # A more complex system might involve a timeout to fully remove inactive users.
             print(f"User {user_id_to_update} with SID {disconnected_user_sid} disconnected from lobby {lobby_code}. Their point will be preserved.")
-            # We don't remove the point, allowing for seamless reconnection on refresh.
-            # We can remove the sid to keep participant data clean
             if 'sid' in lobby['participants'][user_id_to_update]:
                  lobby['participants'][user_id_to_update]['sid'] = None
-            
-            # We can still emit an update if we want the UI to reflect the change in active participants
+
             emit_lobby_update(lobby_code)
+
+            all_disconnected = all(u.get('sid') is None for u in lobby['participants'].values())
+            if all_disconnected:
+                print(f"Lobby {lobby_code} is now inactive — scheduling archive in {ARCHIVE_DELAY} seconds.")
+                schedule_lobby_archive(lobby_code)
             break
 
+
+def schedule_lobby_archive(lobby_code):
+    """Schedules a lobby for automatic archiving after a delay."""
+    if lobby_code in ARCHIVE_TIMERS:
+        # Already scheduled
+        return
+
+    def archive_after_delay():
+        if lobby_code in LOBBIES:
+            all_disconnected = all(u.get('sid') is None for u in LOBBIES[lobby_code]['participants'].values())
+            if all_disconnected:
+                save_lobby_to_file(lobby_code)
+        ARCHIVE_TIMERS.pop(lobby_code, None)
+
+    timer = threading.Timer(ARCHIVE_DELAY, archive_after_delay)
+    ARCHIVE_TIMERS[lobby_code] = timer
+    timer.start()
+
+
+def cancel_lobby_archive(lobby_code):
+    """Cancels a pending archive if someone rejoins."""
+    if lobby_code in ARCHIVE_TIMERS:
+        timer = ARCHIVE_TIMERS.pop(lobby_code)
+        timer.cancel()
+        print(f"Archive canceled for lobby {lobby_code} (participant rejoined).")
 
 def emit_lobby_update(lobby_code):
     """Calculates midpoint and broadcasts the lobby state."""
