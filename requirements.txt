@@ -4,3 +4,4 @@ eventlet
 geopy
 gunicorn
 python-dotenv
+google-generativeai

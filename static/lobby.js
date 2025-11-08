@@ -46,4 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.onerror = (error) => {
         console.error('WebSocket error:', error);
     };
+
+    socket.on('lobby_update', (data) => {
+        console.log('Lobby update received:', data);
+        // Your existing logic to update the lobby
+        updateLobbyView(data);
+    });
+
+    socket.on('travel_info_update', (data) => {
+        console.log('Travel info update received:', data);
+        // Logic to update only the travel info part of your UI
+        updateTravelDetails(data.midpoint_details);
+    });
 });

@@ -7,6 +7,7 @@ import json
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+from travel_data import get_travel_info
 
 load_dotenv()
 
@@ -118,6 +119,15 @@ def on_disconnect():
             break
 
 
+def get_travel_info_async(lobby_code, reachable_midpoint_name):
+    """Background task to fetch travel info and emit an update."""
+    with app.app_context():
+        data = get_travel_info(reachable_midpoint_name)
+        if data:
+            socketio.emit('travel_info_update', {'midpoint_details': data}, room=lobby_code)
+            print(f"Sent travel info update for lobby {lobby_code}")
+
+
 def emit_lobby_update(lobby_code):
     """Calculates midpoint and broadcasts the lobby state."""
     if lobby_code not in LOBBIES:
@@ -126,22 +136,30 @@ def emit_lobby_update(lobby_code):
     lobby = LOBBIES[lobby_code]
     points = list(lobby['points'].values())
     
-    (geometric_midpoint, reachable_midpoint) = (None, None)
+    geometric_midpoint, reachable_midpoint = None, None
 
     if len(points) >= 2:
         geometric_midpoint = calculate_midpoint(points)
         reachable_midpoint = find_closest_town(geometric_midpoint)
 
+    # Send initial payload without blocking
     payload = {
         'code': lobby_code,
         'participants': list(lobby['participants'].keys()),
         'points': lobby['points'],
         'geometric_midpoint': geometric_midpoint,
         'reachable_midpoint': reachable_midpoint,
+        'midpoint_details': {},  # Initially empty
         'messages': lobby.get('messages', [])
     }
     socketio.emit('lobby_update', payload, room=lobby_code)
-    print(f"Sent update for lobby {lobby_code}: {payload}")
+    print(f"Sent initial update for lobby {lobby_code}")
+
+    # If a midpoint is found, start the background task for the heavy lifting
+    if reachable_midpoint:
+        socketio.start_background_task(
+            get_travel_info_async, lobby_code, reachable_midpoint['name']
+        )
 
 import requests
 
