@@ -90,9 +90,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                 chatMessages.innerHTML = '<p><em>No messages yet.</em></p>';
                 return;
             }
-            messages.forEach(msg => {
+
+            messages.forEach((msg, index) => {
                 const p = document.createElement('p');
-                p.innerHTML = `<strong>${msg.name}:</strong> ${msg.text}`;
+                p.innerHTML = `<strong>${msg.name}:</strong> ${msg.text} `;
+
+                const speakBtn = document.createElement('button');
+                speakBtn.textContent = '🔊';
+                speakBtn.style.marginLeft = '6px';
+                speakBtn.addEventListener('click', async () => {
+                    try {
+                        const res = await fetch('/tts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: msg.text })
+                        });
+
+                        if (!res.ok) {
+                            console.error('TTS error:', await res.text());
+                            return;
+                        }
+
+                        const blob = await res.blob();
+                        const audioUrl = URL.createObjectURL(blob);
+                        const audio = new Audio(audioUrl);
+                        audio.play();
+                    } catch (err) {
+                        console.error('Error playing TTS:', err);
+                    }
+                });
+
+                p.appendChild(speakBtn);
                 chatMessages.appendChild(p);
             });
             chatMessages.scrollTop = chatMessages.scrollHeight;

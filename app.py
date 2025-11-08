@@ -1,4 +1,7 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from io import BytesIO
+
+import requests
+from flask import Flask, render_template, jsonify, request, redirect, url_for, send_file
 from flask_socketio import SocketIO, join_room, leave_room
 import random
 import string
@@ -16,6 +19,7 @@ LOBBIES = {}
 ARCHIVE_DIR = "archived_lobbies"
 ARCHIVE_TIMERS = {}  # Track pending archive timers
 ARCHIVE_DELAY = 20  # seconds to wait before archiving inactive lobbies
+ELEVENLABS_API_KEY = "sk_df68b7e3d3bd103c50d67872fe0c5a148c43f26c3083dfdf"
 os.makedirs(ARCHIVE_DIR, exist_ok=True)
 
 def generate_lobby_code(length=8):
@@ -286,6 +290,37 @@ def on_chat(data):
 @app.route('/debug')
 def api_debug():
     return render_template('api_debug.html')
+
+
+@app.route('/tts', methods=['POST'])
+def text_to_speech():
+    data = request.json
+    text = data.get('text', '').strip()
+    if not text:
+        return jsonify({"error": "Missing text"}), 400
+
+    # Example voice (you can change this)
+    voice_id = "L1aJrPa7pLJEyYlh3Ilq"  # or "Antoni", or custom voice ID
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": ELEVENLABS_API_KEY
+    }
+
+    payload = {
+        "text": text,
+        "model_id": "eleven_multilingual_v2"
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    if response.status_code != 200:
+        print("Error:", response.text)
+        return jsonify({"error": "TTS request failed"}), 500
+
+    # Send back audio as a playable file
+    return send_file(BytesIO(response.content), mimetype='audio/mpeg')
 
 
 if __name__ == '__main__':
