@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Lobbies</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='entry.css') }}">
+</head>
+<body>
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>
+    <div class="container">
+        <h1>Cosmic Lobbies</h1>
+        <div class="buttons">
+            <a href="#" class="btn" id="createLobbyBtn">Open a Lobby</a>
+            <a href="#" class="btn" id="joinLobbyBtn">Join a Lobby</a>
+        </div>
+    </div>
+
+    <div id="joinLobbyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Join a Lobby</h2>
+            <p>Enter the 8-digit code to join.</p>
+            <input type="text" id="lobbyCodeInput" placeholder="Enter code..." maxlength="8">
+            <button id="joinLobbySubmit">Join</button>
+        </div>
+    </div>
+
+    <script>
+        const createLobbyBtn = document.getElementById('createLobbyBtn');
+        const joinLobbyBtn = document.getElementById('joinLobbyBtn');
+        const modal = document.getElementById('joinLobbyModal');
+        const closeButton = document.querySelector('.close-button');
+        const joinLobbySubmit = document.getElementById('joinLobbySubmit');
+        const lobbyCodeInput = document.getElementById('lobbyCodeInput');
+
+        createLobbyBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fetch('/create_lobby', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.location.href = `/planet/${data.code}`;
+            })
+            .catch(error => {
+                console.error('Error creating lobby:', error);
+                alert('Could not create a lobby. Please try again.');
+            });
+        });
+
+        joinLobbyBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modal.style.display = 'block';
+        });
+
+        closeButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        joinLobbySubmit.addEventListener('click', () => {
+            const code = lobbyCodeInput.value.toUpperCase();
+            if (code.length > 0) { // Basic validation
+                // No client-side validation of lobby existence, server will handle it
+                window.location.href = `/planet/${code}`;
+            } else {
+                alert('Please enter a lobby code.');
+            }
+        });
+    </script>
+</body>
+</html>
