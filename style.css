@@ -78,3 +78,163 @@ p {
     100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+/* ============ Starfield Menu Overlay ============ */
+.starfield-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20; /* On top of page chrome */
+    pointer-events: none; /* Enable only for interactive elements below */
+}
+
+.starfield-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.starfield-star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    opacity: 0.5;
+    animation-name: twinkle;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.2; }
+    50% { opacity: 0.7; }
+    100% { opacity: 0.2; }
+}
+
+.starfield-header {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding-top: 80px;
+    color: #ffffff;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    pointer-events: none;
+}
+
+.starfield-title {
+    font-size: 28px;
+    margin: 0 0 8px 0;
+}
+
+.starfield-subtitle {
+    font-size: 16px;
+    color: #9cc3ff;
+    margin: 0;
+}
+
+.starfield-stage {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    height: 100vh;
+}
+
+.menu-star {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    pointer-events: auto; /* enable hover/click */
+    background: transparent;
+    border: 0;
+}
+
+.menu-star .outer-glow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 80px;
+    height: 80px;
+    transform: translate(-50%, -50%);
+    border-radius: 9999px;
+    filter: blur(16px);
+    opacity: 0.2;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.menu-star .core {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 0 20px rgba(255,255,255,0.4);
+    transition: box-shadow 0.3s ease, transform 0.1s ease;
+    font-size: 24px;
+}
+
+.menu-star:hover .core { transform: scale(1.02); }
+
+.menu-star .ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 60px;
+    height: 60px;
+    transform: translate(-50%, -50%);
+    border-radius: 9999px;
+    border: 2px solid currentColor;
+    opacity: 0;
+}
+
+.menu-star.hovered .ring {
+    animation: ringPulse 1s ease-out infinite;
+}
+
+@keyframes ringPulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    60% { opacity: 0.25; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+.menu-star .tooltip {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 24px);
+    transform: translateX(-50%) translateY(-10px);
+    background: rgba(17, 24, 39, 0.95); /* gray-900/95 */
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border: 1px solid #374151; /* gray-700 */
+    color: #ffffff;
+    min-width: 250px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.menu-star.hovered .tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.shooting-star {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.5);
+    animation: shoot 2s ease-out infinite;
+}
+
+@keyframes shoot {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translate(300px, 200px); opacity: 0; }
+}
+
