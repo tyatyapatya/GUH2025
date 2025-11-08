@@ -8,11 +8,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // const terrainProvider = await Cesium.Terrain.fromWorldTerrain();
 
+        // Build imagery provider view models and preselect Bing Aerial with Labels
+        const imageryViewModels = Cesium.createDefaultImageryProviderViewModels();
+        const selectedVM =
+            imageryViewModels.find(vm => /aerial.*labels/i.test(vm.name)) ||
+            imageryViewModels.find(vm => /labels/i.test(vm.name)) ||
+            imageryViewModels[0];
+
         const viewer = new Cesium.Viewer('cesiumContainer', {
             // terrainProvider: terrainProvider,
-            imageryProvider: new Cesium.OpenStreetMapImageryProvider({
-                url : 'https://a.tile.openstreetmap.org/'
-            }),
+            imageryProviderViewModels: imageryViewModels,
+            selectedImageryProviderViewModel: selectedVM,
+            baseLayerPicker: true, // keep the layer picker so users can switch if needed
             infoBox: false,
             selectionIndicator: false,
             shadows: true,
