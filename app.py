@@ -133,10 +133,8 @@ def calculate_midpoint(points):
     Calculates the geographic midpoint (centroid) of a list of points.
     Points are dictionaries with 'lat' and 'lon'.
     """
-    if not points:
+    if len(points) < 2:
         return None
-    if len(points) == 1:
-        return points[0]
 
     from math import radians, degrees, sin, cos, atan2, sqrt
     
