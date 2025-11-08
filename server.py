@@ -80,17 +80,19 @@ def index():
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Meet Halfway - Dashboard</title>
+  <title>Meet Halfway - Dashboard + Chat</title>
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <style>
     body { font-family: Arial; margin: 20px; }
     .flex { display: flex; gap: 20px; }
     .box { border: 1px solid #ccc; padding: 10px; border-radius: 10px; width: 45%; }
     pre { background: #f5f5f5; padding: 10px; }
+    #chat { border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px; }
+    #messages { height: 150px; overflow-y: auto; background: #f0f0f0; padding: 5px; }
   </style>
 </head>
 <body>
-  <h1>Meet Halfway - Real-Time Test</h1>
+  <h1>Meet Halfway - Real-Time Test with Chat</h1>
   <div>
     <input id="name" placeholder="Your name" />
     <input id="session_id" placeholder="Session ID (optional)" />
@@ -106,6 +108,12 @@ def index():
     <div class="box">
       <h3>Current Session Details</h3>
       <pre id="current"></pre>
+      <div id="chat">
+        <h4>Chat</h4>
+        <div id="messages"></div>
+        <input id="chatInput" placeholder="Type a message..." style="width:80%" />
+        <button onclick="sendMessage()">Send</button>
+      </div>
     </div>
   </div>
 
@@ -113,10 +121,11 @@ def index():
     const socket = io();
     let session_id = null;
     let user_id = null;
+    let name = null;
 
     async function joinSession() {
       const sid = document.getElementById('session_id').value;
-      const name = document.getElementById('name').value || 'Anon';
+      name = document.getElementById('name').value || 'Anon';
       if (!sid) {
         const res = await fetch('/create_session', {method: 'POST'});
         const js = await res.json();
@@ -141,15 +150,34 @@ def index():
       }
     }
 
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (text && session_id && user_id) {
+        socket.emit('chat_message', {session_id, user_id, name, text});
+        input.value = '';
+      }
+    }
+
     socket.on('session_update', data => {
       document.getElementById('sessions').innerText = JSON.stringify(data.sessions, null, 2);
-      if (data.session_id === session_id)
+      if (data.session_id === session_id) {
         document.getElementById('current').innerText = JSON.stringify(data, null, 2);
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+        (data.messages || []).forEach(m => {
+          const p = document.createElement('div');
+          p.textContent = `[${m.name}] ${m.text}`;
+          messagesDiv.appendChild(p);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
     });
   </script>
 </body>
 </html>
 ''')
+
 
 @app.route('/create_session', methods=['POST'])
 def create_session():
@@ -184,6 +212,25 @@ def on_location(data):
     if session_id in SESSIONS and user_id in SESSIONS[session_id]['participants']:
         SESSIONS[session_id]['participants'][user_id].update({'lat': lat, 'lon': lon})
     broadcast_session_update(session_id)
+
+@socketio.on('chat_message')
+def on_chat(data):
+    session_id = data.get('session_id')
+    name = data.get('name', 'Anon')
+    text = data.get('text', '').strip()
+    if not text:
+        return
+    if session_id not in SESSIONS:
+        return
+    message = {'name': name, 'text': text}
+    SESSIONS[session_id].setdefault('messages', []).append(message)
+    socketio.emit('session_update', {
+        'sessions': get_all_sessions_data(),
+        'session_id': session_id,
+        'participants': SESSIONS[session_id]['participants'],
+        'midpoint': {'lat': None, 'lon': None},
+        'messages': SESSIONS[session_id]['messages']
+    })
 
 if __name__ == '__main__':
     socketio.run(app, host='127.0.0.1', port=5000)
