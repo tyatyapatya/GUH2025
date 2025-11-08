@@ -1,3 +1,4 @@
+import math
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room
 import random
@@ -5,9 +6,12 @@ import string
 import json
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'a-very-secret-key'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-very-secret-key')
 socketio = SocketIO(app)
 
 # In-memory storage for lobbies
@@ -121,26 +125,80 @@ def emit_lobby_update(lobby_code):
 
     lobby = LOBBIES[lobby_code]
     points = list(lobby['points'].values())
-    midpoint = calculate_midpoint(points)
+    
+    (geometric_midpoint, reachable_midpoint) = (None, None)
+
+    if len(points) >= 2:
+        geometric_midpoint = calculate_midpoint(points)
+        reachable_midpoint = find_closest_town(geometric_midpoint)
 
     payload = {
         'code': lobby_code,
         'participants': list(lobby['participants'].keys()),
         'points': lobby['points'],
-        'midpoint': midpoint,
+        'geometric_midpoint': geometric_midpoint,
+        'reachable_midpoint': reachable_midpoint,
         'messages': lobby.get('messages', [])
     }
     socketio.emit('lobby_update', payload, room=lobby_code)
     print(f"Sent update for lobby {lobby_code}: {payload}")
 
+import requests
+
+def find_closest_town(midpoint):
+    lat = midpoint['lat']
+    lon = midpoint['lon']
+
+    url = "http://getnearbycities.geobytes.com/GetNearbyCities"
+    params = {
+        'latitude': lat,
+        'longitude': lon,
+        'radius': 1000,         
+        'limit': 1            
+    }
+
+    try:
+        resp = requests.get(url, params=params, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        if not data:
+            return None
+
+        # Data is an array of arrays; pick first
+        first = data[0]
+        # According to spec:
+        # [0] = bearing
+        # [1] = city name
+        # [2] = region/state code
+        # [3] = country name
+        # [4] = direction
+        # [5] = nautical miles
+        # [6] = internet country code
+        # [7] = kilometres
+        # [8] = latitude
+        # [9] = geobytes location code
+        # [10] = longitude
+        # [11] = miles
+        # [12] = region or state name
+        city_name = first[1]
+        country = first[3]
+        lat2 = first[8]
+        lon2 = first[10]
+        return {
+            'lat': lat2,
+            'lon': lon2,
+            'name': f"{city_name}, {country}"
+        }
+
+    except Exception as e:
+        print(f"Geobytes lookup failed at {lat},{lon}: {e}")
+        return None
 
 def calculate_midpoint(points):
     """
     Calculates the geographic midpoint (centroid) of a list of points.
     Points are dictionaries with 'lat' and 'lon'.
     """
-    if len(points) < 2:
-        return None
 
     from math import radians, degrees, sin, cos, atan2, sqrt
     

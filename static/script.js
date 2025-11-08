@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         let pointEntities = new Map(); // Map userId to entity
-        let midpointEntity = null;
+        let geometricMidpointEntity = null;
+        let reachableMidpointEntity = null;
         let animatedLines = [];
 
         const resetButton = document.getElementById('resetButton');
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         socket.on('lobby_update', (data) => {
             console.log('Lobby update received:', data);
-            updateGlobe(data.points, data.midpoint, data.participants);
+            updateGlobe(data.points, data.geometric_midpoint, data.reachable_midpoint, data.participants);
         });
 
         socket.on('error', (data) => {
@@ -88,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // --- Globe Update Logic ---
-        function updateGlobe(points, midpoint, participantIds) {
+        function updateGlobe(points, geometricMidpoint, reachableMidpoint, participantIds) {
             // Clear existing entities that are not in the new participants list
             const currentPointIds = Object.keys(points);
             const entitiesToRemove = [];
@@ -100,12 +101,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             entitiesToRemove.forEach(entity => viewer.entities.remove(entity));
             
-            // Clear lines and midpoint
+            // Clear lines and midpoints
             animatedLines.forEach(entity => viewer.entities.remove(entity));
             animatedLines = [];
-            if (midpointEntity) {
-                viewer.entities.remove(midpointEntity);
-                midpointEntity = null;
+            if (geometricMidpointEntity) {
+                viewer.entities.remove(geometricMidpointEntity);
+                geometricMidpointEntity = null;
+            }
+            if (reachableMidpointEntity) {
+                viewer.entities.remove(reachableMidpointEntity);
+                reachableMidpointEntity = null;
             }
 
             // Add/update points for participants
@@ -131,14 +136,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // Add midpoint and lines if it exists
-            if (midpoint && midpoint.lat !== null && midpoint.lon !== null) {
-                const midpointPosition = Cesium.Cartesian3.fromDegrees(midpoint.lon, midpoint.lat);
-                midpointEntity = viewer.entities.add({
+            // Add geometric midpoint and lines if it exists
+            if (geometricMidpoint && geometricMidpoint.lat !== null && geometricMidpoint.lon !== null) {
+                const midpointPosition = Cesium.Cartesian3.fromDegrees(geometricMidpoint.lon, geometricMidpoint.lat);
+                geometricMidpointEntity = viewer.entities.add({
                     position: midpointPosition,
                     point: {
                         pixelSize: 12,
-                        color: Cesium.Color.GOLD,
+                        color: Cesium.Color.ORANGE,
                         outlineColor: Cesium.Color.BLACK,
                         outlineWidth: 2
                     }
@@ -146,12 +151,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Draw lines from each participant to the midpoint
                 pointEntities.forEach(entity => {
-                    animateLine(entity.position.getValue(viewer.clock.currentTime), midpointPosition, viewer);
+                    animateLine(entity.position.getValue(viewer.clock.currentTime), midpointPosition, viewer, true); // Dotted lines
+                });
+            }
+
+            // Add reachable midpoint and lines if it exists
+            if (reachableMidpoint && reachableMidpoint.lat !== null && reachableMidpoint.lon !== null) {
+                const midpointPosition = Cesium.Cartesian3.fromDegrees(reachableMidpoint.lon, reachableMidpoint.lat);
+                reachableMidpointEntity = viewer.entities.add({
+                    position: midpointPosition,
+                    point: {
+                        pixelSize: 12,
+                        color: Cesium.Color.GOLD,
+                        outlineColor: Cesium.Color.BLACK,
+                        outlineWidth: 2
+                    },
+                    label: {
+                        text: reachableMidpoint.name,
+                        font: '12pt monospace',
+                        outlineWidth: 2,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -9)
+                    }
+                });
+
+                // Draw lines from each participant to the midpoint
+                pointEntities.forEach(entity => {
+                    animateLine(entity.position.getValue(viewer.clock.currentTime), midpointPosition, viewer, false); // Filled lines
                 });
             }
         }
 
-        function animateLine(startPoint, endPoint, viewer) {
+        function animateLine(startPoint, endPoint, viewer, dotted = false) {
             const duration = 2000; // 2 seconds
             const startTime = Cesium.JulianDate.now();
 
@@ -165,7 +196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return [startPoint, currentPos];
                     }, false),
                     width: 3,
-                    material: Cesium.Color.RED,
+                    material: dotted ? new Cesium.PolylineDashMaterialProperty({ color: Cesium.Color.RED }) : Cesium.Color.RED,
                     clampToGround: true
                 }
             });
