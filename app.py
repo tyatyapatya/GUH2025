@@ -18,9 +18,13 @@ def generate_lobby_code(length=8):
             return code
 
 @app.route('/')
-def entry():
+def index():
     """Serves the entry page."""
-    return render_template('entry.html')
+    return render_template('index.html')
+
+@app.route('/lobby')
+def lobby():
+    return render_template('lobby.html')
 
 @app.route('/planet/<lobby_code>')
 def planet(lobby_code):

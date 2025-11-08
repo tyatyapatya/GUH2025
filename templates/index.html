@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Main Menu - MeetInTheMiddle</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <style>
+    body { background: #030712; } /* dark backdrop */
+  </style>
+</head>
+<body>
+  <div class="starfield-overlay" id="starfieldMenu">
+    <div class="starfield-bg" id="starfieldBg"></div>
+    <div class="starfield-header">
+      <h2 class="starfield-title">Where People Collide</h2>
+      <p class="starfield-subtitle">Find the perfect meeting point for everyone (Find the perfect collision point)</p>
+    </div>
+    <div class="starfield-stage" id="menuStarsStage"></div>
+  </div>
+  <script src="{{ url_for('static', filename='main-menu.js') }}"></script>
+</body>
+</html>
