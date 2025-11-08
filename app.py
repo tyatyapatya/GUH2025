@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect, url_for, send_from_directory
 from flask_socketio import SocketIO, join_room, leave_room
 import random
 import string
@@ -6,6 +6,12 @@ import string
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a-very-secret-key'
 socketio = SocketIO(app)
+
+# Serve font files located in the top-level 'fonts' directory (outside the default 'static').
+# This lets CSS reference /fonts/Pentagra.woff2 etc.
+@app.route('/fonts/<path:filename>')
+def serve_font(filename):
+    return send_from_directory('fonts', filename)
 
 # In-memory storage for lobbies
 LOBBIES = {}
