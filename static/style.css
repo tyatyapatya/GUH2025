@@ -163,7 +163,7 @@ p {
 }
 
 .starfield-title {
-    font-size: 28px;
+    font-size: 56px; /* increased for main landing h1 */
     margin: 0 0 8px 0;
 }
 
