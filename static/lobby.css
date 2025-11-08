@@ -106,7 +106,7 @@ h1 {
 .btn-wrap:hover::after {
   opacity: 0.6;
   animation: ringPulseOval var(--lobby-ring-duration) ease-out infinite;
-  animation-delay: calc(var(--lobby-ring-duration) / 3);
+  animation-delay: var(--lobby-ring-duration);
 }
 
 /* Oval pulse that respects the button's border-radius and aspect ratio */
