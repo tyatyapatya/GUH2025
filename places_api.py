@@ -19,7 +19,7 @@ def get_places(city, place_type, location_bias=None):
     headers = {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": API_KEY,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.priceLevel,places.photos.name,places.rating,places.location,places.userRatingCount,places.googleMapsUri"
+        "X-Goog-FieldMask": "places.id,places.displayName,places.photos.name,places.rating,places.location,places.userRatingCount,places.googleMapsUri"
     }
 
     data = {
@@ -47,20 +47,6 @@ def get_places(city, place_type, location_bias=None):
         
     return response.json().get("places", [])
 
-def format_price_level(price_level_enum):
-    """Converts the price level enum to a dollar sign string."""
-    if not price_level_enum:
-        return ""
-    
-    price_map = {
-        "PRICE_LEVEL_FREE": "Free",
-        "PRICE_LEVEL_INEXPENSIVE": "$",
-        "PRICE_LEVEL_MODERATE": "$$",
-        "PRICE_LEVEL_EXPENSIVE": "$$$",
-        "PRICE_LEVEL_VERY_EXPENSIVE": "$$$$",
-    }
-    return price_map.get(price_level_enum, "")
-
 def get_photo_url(photo_resource_name, max_height=400):
     """Constructs a photo URL from its resource name."""
     if not photo_resource_name:
@@ -71,7 +57,7 @@ def get_city_data(city, midpoint=None, reachable_midpoint=None):
     """
     Get hotels and attractions for a given city.
     """
-    hotels = get_places(city, "hotel", location_bias=reachable_midpoint)
+    hotels = get_places(city, "local hotel", location_bias=reachable_midpoint)
     attractions = get_places(city, "local tourist attraction", location_bias=reachable_midpoint)
 
     # The new API can return details in the search result, so we don't need a separate details call.
@@ -87,7 +73,6 @@ def get_city_data(city, midpoint=None, reachable_midpoint=None):
 
         hotel_details.append({
             "name": hotel.get("displayName"),
-            "price": format_price_level(hotel.get("priceLevel")),
             "photo_url": get_photo_url(photo_name),
             "rating": hotel.get("rating"),
             "userRatingCount": hotel.get("userRatingCount"),
