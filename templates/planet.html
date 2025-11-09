@@ -38,6 +38,9 @@
         <button id="quitButton">Quit</button>
         <div id="loadingIndicator" class="loading-indicator"></div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="{{ url_for('static', filename='auth.js') }}"></script>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>

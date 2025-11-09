@@ -1,61 +1,82 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const socket = new WebSocket('ws://localhost:5000/lobby');
+    const createLobbyBtn = document.getElementById('createLobbyBtn');
+    const joinLobbyBtn = document.getElementById('joinLobbyBtn');
+    const modal = document.getElementById('joinLobbyModal');
+    const closeButton = document.querySelector('.close-button');
+    const joinLobbySubmit = document.getElementById('joinLobbySubmit');
+    const lobbyCodeInput = document.getElementById('lobbyCodeInput');
 
-    const playersList = document.getElementById('players');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInput = document.getElementById('chat-input');
+    let currentUser = null;
 
-    socket.onopen = () => {
-        console.log('WebSocket connection established');
-        const playerName = prompt('Enter your name:') || 'Anonymous';
-        socket.send(JSON.stringify({ type: 'join', name: playerName }));
-    };
+    onAuthStateChanged(user => {
+        currentUser = user;
+        if (user) {
+            console.log("User is signed in:", user.displayName);
+        } else {
+            console.log("User is signed out.");
+        }
+    });
 
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (data.type === 'player_list') {
-            playersList.innerHTML = '';
-            data.players.forEach(player => {
-                const li = document.createElement('li');
-                li.textContent = player;
-                playersList.appendChild(li);
+    createLobbyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+            signInWithGoogle().then(result => {
+                currentUser = result.user;
+                createLobby();
+            }).catch(error => {
+                console.error("Google Sign-In failed:", error);
+                alert("You must be signed in to create a lobby.");
             });
-        } else if (data.type === 'chat_message') {
-            const p = document.createElement('p');
-            p.textContent = `${data.name}: ${data.message}`;
-            chatMessages.appendChild(p);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    };
-
-    chatInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            const message = chatInput.value;
-            if (message) {
-                socket.send(JSON.stringify({ type: 'chat', message: message }));
-                chatInput.value = '';
-            }
+        } else {
+            createLobby();
         }
     });
 
-    socket.onclose = () => {
-        console.log('WebSocket connection closed');
-    };
+    function createLobby() {
+        fetch('/create_lobby', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            window.location.href = `/planet/${data.code}`;
+        })
+        .catch(error => {
+            console.error('Error creating lobby:', error);
+            alert('Could not create a lobby. Please try again.');
+        });
+    }
 
-    socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-
-    socket.on('lobby_update', (data) => {
-        console.log('Lobby update received:', data);
-        // Your existing logic to update the lobby
-        updateLobbyView(data);
+    joinLobbyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+            signInWithGoogle().then(result => {
+                currentUser = result.user;
+                modal.style.display = 'block';
+            }).catch(error => {
+                console.error("Google Sign-In failed:", error);
+                alert("You must be signed in to join a lobby.");
+            });
+        } else {
+            modal.style.display = 'block';
+        }
     });
 
-    socket.on('travel_info_update', (data) => {
-        console.log('Travel info update received:', data);
-        // Logic to update only the travel info part of your UI
-        updateTravelDetails(data.midpoint_details);
+    closeButton.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    joinLobbySubmit.addEventListener('click', () => {
+        const code = lobbyCodeInput.value.toUpperCase();
+        if (code.length > 0) {
+            window.location.href = `/planet/${code}`;
+        } else {
+            alert('Please enter a lobby code.');
+        }
     });
 });

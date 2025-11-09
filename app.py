@@ -11,8 +11,11 @@ from datetime import datetime
 from dotenv import load_dotenv
 from places_api import get_city_data
 import threading
+from firebase_auth import initialize_firebase, verify_firebase_token
 
 load_dotenv()
+
+initialize_firebase()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-very-secret-key')
@@ -71,10 +74,13 @@ def create_lobby():
 def on_join(data):
     """Handles a user joining a lobby."""
     lobby_code = data.get('code')
-    user_id = data.get('userId')
+    token = data.get('token')
+
+    user_id = verify_firebase_token(token)
 
     if not lobby_code or not user_id:
-        print("Join failed: Missing lobby_code or userId")
+        print("Join failed: Missing lobby_code or invalid token")
+        socketio.emit('auth_error', {'message': 'Invalid session. Please sign in again.'})
         return
 
     if lobby_code not in LOBBIES:
@@ -131,8 +137,13 @@ def on_leave(data):
 def on_add_point(data):
     """Handles a user adding or updating a point."""
     lobby_code = data.get('code')
-    user_id = data.get('userId')
+    token = data.get('token')
     point = data.get('point')
+
+    user_id = verify_firebase_token(token)
+    if not user_id:
+        socketio.emit('auth_error', {'message': 'Invalid session. Please sign in again.'})
+        return
 
     if lobby_code in LOBBIES and user_id in LOBBIES[lobby_code]['participants']:
         LOBBIES[lobby_code]['points'][user_id] = point
@@ -359,8 +370,15 @@ def load_archived_lobby(lobby_code):
 @socketio.on('chat_message')
 def on_chat(data):
     lobby_code = data.get('code')
+    token = data.get('token')
     name = data.get('name', 'Anon')
     text = data.get('text', '').strip()
+
+    user_id = verify_firebase_token(token)
+    if not user_id:
+        socketio.emit('auth_error', {'message': 'Invalid session. Please sign in again.'})
+        return
+
     if not text:
         return
     if lobby_code not in LOBBIES:

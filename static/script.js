@@ -45,12 +45,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (lobbyId) {
             document.getElementById('lobby-code').textContent = lobbyId;
-            // Use sessionStorage to ensure a new user ID for each tab/session.
-            userId = sessionStorage.getItem(`userId_${lobbyId}`) || crypto.randomUUID();
-            sessionStorage.setItem(`userId_${lobbyId}`, userId);
+            
+            onAuthStateChanged(user => {
+                if (user) {
+                    userId = user.uid;
+                    getCurrentUserToken().then(token => {
+                        if (token) {
+                            socket.emit('join_lobby', { code: lobbyId, token: token });
+                        } else {
+                            alert('Could not get authentication token. Please sign in again.');
+                            window.location.href = '/lobby';
+                        }
+                    });
+                } else {
+                    // Not signed in, redirect to lobby to sign in
+                    window.location.href = '/lobby';
+                }
+            });
 
-            // Join the lobby
-            socket.emit('join_lobby', { code: lobbyId, userId: userId });
         } else {
             console.error('No lobby code found in URL.');
             alert('Could not find lobby. Please create or join one.');
@@ -127,6 +139,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
+        socket.on('auth_error', (data) => {
+            console.error('Authentication error:', data.message);
+            alert(`Authentication error: ${data.message}`);
+            window.location.href = '/lobby';
+        });
+
         socket.on('error', (data) => {
             console.error('Socket error:', data.message);
             alert(`Error: ${data.message}`);
@@ -140,8 +158,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const lat = Cesium.Math.toDegrees(cartographic.latitude);
                 const lon = Cesium.Math.toDegrees(cartographic.longitude);
 
-                // Send location update to the server
-                socket.emit('add_point', { code: lobbyId, userId: userId, point: { lat, lon } });
+                getCurrentUserToken().then(token => {
+                    if (token) {
+                        // Send location update to the server
+                        socket.emit('add_point', { code: lobbyId, token: token, point: { lat, lon } });
+                    }
+                });
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
