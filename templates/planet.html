@@ -35,17 +35,22 @@
                 <button id="send-button">send</button>
             </div>
         </div>
-        <button id="chatToggle" type="button" aria-label="Hide chat" title="Hide chat">‹</button>
-        <div id="midpoint-info">
-            <h3>Midpoint: <span id="midpoint-city">–</span></h3>
-            <div id="midpoint-content">
-                <p><em>Waiting for midpoint data...</em></p>
-            </div>
-        </div>
+        <button id="chatToggle" type="button" aria-label="Hide chat" title="Hide chat">^</button>
         
         <button id="quitButton" type="button" title="Quit">
             <img src="{{ url_for('serve_image', filename='quit_w.svg') }}" alt="Quit Button" />
         </button>
+        
+            <!-- Midpoint Hotels & Attractions Panel (left) -->
+            <div id="midpoint-panel" aria-live="polite" aria-label="Midpoint hotels and attractions">
+                <div class="midpoint-title">Midpoint: <span id="midpoint-city">–</span></div>
+                <div id="midpoint-content">
+                    <p style="margin:10px; color:#cbd5e1;"><em>Waiting for midpoint data...</em></p>
+                </div>
+            </div>
+            <button id="midpointToggle" type="button" aria-label="Hide midpoint info" title="Hide midpoint info">‹</button>
+
+            <!-- Chat toggle (right) -->
         <div id="loadingIndicator" class="loading-indicator"></div>
     </div>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>

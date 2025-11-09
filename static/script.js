@@ -60,6 +60,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log('Lobby update received:', data);
             updateGlobe(data.points, data.geometric_midpoint, data.reachable_midpoint, data.participants);
             updateChat(data.messages);
+            // Update midpoint title if reachable midpoint name available
+            if (data.reachable_midpoint && data.reachable_midpoint.name) {
+                const cityEl = document.getElementById('midpoint-city');
+                if (cityEl) cityEl.textContent = data.reachable_midpoint.name;
+            }
         });
 
         // --- Chat Box Setup ---
@@ -68,6 +73,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sendButton = document.getElementById('send-button');
     const chatContainer = document.getElementById('chat-container');
     const chatToggle = document.getElementById('chatToggle');
+    const midpointPanel = document.getElementById('midpoint-panel');
+    const midpointToggle = document.getElementById('midpointToggle');
 
         sendButton.addEventListener('click', sendMessage);
         chatInput.addEventListener('keypress', (e) => {
@@ -116,6 +123,102 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sessionStorage.setItem(hiddenKey, isHidden ? '1' : '0');
                 setToggleState(isHidden);
             });
+        }
+
+        // Midpoint panel hide/show toggle
+        if (midpointToggle && midpointPanel) {
+            const setMidpointToggleState = (hidden) => {
+                if (hidden) {
+                    midpointToggle.textContent = '›'; // arrow pointing right (show)
+                    midpointToggle.setAttribute('aria-label', 'Show midpoint info');
+                    midpointToggle.setAttribute('title', 'Show midpoint info');
+                } else {
+                    midpointToggle.textContent = '‹'; // arrow pointing left (hide)
+                    midpointToggle.setAttribute('aria-label', 'Hide midpoint info');
+                    midpointToggle.setAttribute('title', 'Hide midpoint info');
+                }
+            };
+
+            const midHiddenKey = `midHidden_${lobbyId}`;
+            const initialMidHidden = sessionStorage.getItem(midHiddenKey) === '1';
+            if (initialMidHidden) midpointPanel.classList.add('hidden');
+            setMidpointToggleState(initialMidHidden);
+
+            midpointToggle.addEventListener('click', () => {
+                midpointPanel.classList.toggle('hidden');
+                const isHidden = midpointPanel.classList.contains('hidden');
+                sessionStorage.setItem(midHiddenKey, isHidden ? '1' : '0');
+                setMidpointToggleState(isHidden);
+            });
+        }
+
+        // Listen for travel info details to populate midpoint content
+        socket.on('travel_info_update', (payload) => {
+            const container = document.getElementById('midpoint-content');
+            if (!container) return;
+            const details = payload.midpoint_details || {};
+            const hotels = details.hotels || [];
+            const attractions = details.attractions || [];
+            const cityName = details.city || '';
+            const cityEl = document.getElementById('midpoint-city');
+            if (cityEl && cityName) cityEl.textContent = cityName;
+
+            if (hotels.length === 0 && attractions.length === 0) {
+                container.innerHTML = '<p style="margin:10px; color:#cbd5e1;"><em>No data found.</em></p>';
+                return;
+            }
+
+            // Build sections
+            const sections = [];
+            if (hotels.length) {
+                const hotelSection = document.createElement('div');
+                hotelSection.className = 'mid-list';
+                const title = document.createElement('div');
+                title.className = 'mid-section-title';
+                title.textContent = 'Hotels';
+                hotelSection.appendChild(title);
+                hotels.slice(0, 6).forEach(h => hotelSection.appendChild(renderMidCard(h)));
+                sections.push(hotelSection);
+            }
+            if (attractions.length) {
+                const attrSection = document.createElement('div');
+                attrSection.className = 'mid-list';
+                const title = document.createElement('div');
+                title.className = 'mid-section-title';
+                title.textContent = 'Attractions';
+                attrSection.appendChild(title);
+                attractions.slice(0, 6).forEach(a => attrSection.appendChild(renderMidCard(a)));
+                sections.push(attrSection);
+            }
+
+            container.innerHTML = '';
+            sections.forEach(s => container.appendChild(s));
+        });
+
+        function renderMidCard(item) {
+            const card = document.createElement('div');
+            card.className = 'mid-card';
+            const img = document.createElement('img');
+            if (item.photo_url) img.src = item.photo_url; else img.style.opacity = '0.3';
+            const meta = document.createElement('div');
+            meta.className = 'mid-meta';
+            const name = document.createElement('div');
+            name.className = 'mid-name';
+            name.textContent = item.name || 'Unnamed';
+            const sub = document.createElement('div');
+            sub.className = 'mid-sub';
+            const rating = item.rating ? `⭐ ${item.rating.toFixed(1)}` : 'No rating';
+            const distance = item.distance_km ? `${item.distance_km.toFixed(1)} km` : '';
+            sub.textContent = [rating, distance].filter(Boolean).join(' · ');
+            meta.appendChild(name);
+            meta.appendChild(sub);
+            if (item.googleMapsUri) {
+                name.style.cursor = 'pointer';
+                name.addEventListener('click', () => window.open(item.googleMapsUri, '_blank'));
+            }
+            card.appendChild(img);
+            card.appendChild(meta);
+            return card;
         }
 
         function updateChat(messages) {
