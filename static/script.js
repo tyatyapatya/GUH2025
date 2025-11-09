@@ -4,8 +4,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- User and Lobby State ---
     let lobbyId = null;
-    let userId = null;
     const socket = io();
+
+    // Wait for authentication to be ready
+    const userId = await onAuthReady;
 
     // --- Cesium Setup ---
     try {
@@ -45,10 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (lobbyId) {
             document.getElementById('lobby-code').textContent = lobbyId;
-            // Use sessionStorage to ensure a new user ID for each tab/session.
-            userId = sessionStorage.getItem(`userId_${lobbyId}`) || crypto.randomUUID();
-            sessionStorage.setItem(`userId_${lobbyId}`, userId);
-
+            
             // Join the lobby
             socket.emit('join_lobby', { code: lobbyId, userId: userId });
         } else {
@@ -153,8 +152,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Disconnect from the socket
                 socket.disconnect();
 
-                // Clear the stored session for this lobby
-                sessionStorage.removeItem(`userId_${lobbyId}`);
+                // Do not clear sessionStorage on quit, to persist login state
+                // sessionStorage.removeItem(`userId_${lobbyId}`);
 
                 // Optional small delay to let the disconnect propagate
                 setTimeout(() => {
