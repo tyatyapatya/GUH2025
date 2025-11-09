@@ -21,7 +21,7 @@ html, body {
     height: 100%;
     width: 100%;
     overflow: hidden; /* Prevents scrollbars */
-        font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     color: #333;
 }
 
@@ -163,7 +163,7 @@ p {
 }
 
 .starfield-title {
-    font-size: 56px; /* increased for main landing h1 */
+    font-size: 48px;
     margin: 0 0 8px 0;
 }
 
@@ -256,6 +256,7 @@ p {
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     opacity: 0;
+    font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
@@ -279,5 +280,10 @@ p {
     0% { transform: translate(0, 0); opacity: 0; }
     10% { opacity: 1; }
     100% { transform: translate(300px, 200px); opacity: 0; }
+}
+
+/* ============ Cesium credits: hide logo only (keep text attributions) ============ */
+.cesium-viewer .cesium-credit-logoContainer {
+    display: none !important;
 }
 
