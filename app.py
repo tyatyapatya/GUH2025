@@ -53,6 +53,10 @@ def index():
 def lobby():
     return render_template('lobby.html')
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/planet/<lobby_code>')
 def planet(lobby_code):
     """Serves the planet/lobby page."""
