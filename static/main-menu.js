@@ -32,7 +32,7 @@
 
   const menuStars = [
     { id: 'new-meeting', x: 50, y: 35, color: '#60a5fa', glowColor: '#3b82f6', label: 'Find Meeting Point', description: 'Add locations and find the perfect middle ground', icon: '📍' },
-    { id: 'saved-meetings', x: 35, y: 35, color: '#a78bfa', glowColor: '#8b5cf6', label: 'Saved Meetings', description: 'View your previous meeting locations', icon: '⏱️' },
+    { id: 'login', x: 35, y: 35, color: '#a78bfa', glowColor: '#8b5cf6', label: 'Login', description: 'Sign in with Google', icon: '👤' },
     // { id: 'group-meeting', x: 70, y: 55, color: '#34d399', glowColor: '#10b981', label: 'Group Meeting', description: 'Coordinate with multiple people', icon: '👥' },
     // { id: 'settings', x: 40, y: 70, color: '#fbbf24', glowColor: '#f59e0b', label: 'Settings', description: 'Customize your preferences', icon: '⚙️' },
     { id: 'about', x: 65, y: 35, color: '#f472b6', glowColor: '#ec4899', label: 'About', description: 'Learn more about this tool', icon: 'ℹ️' },
@@ -86,6 +86,12 @@
           window.location.href = '/lobby';
         } else if (ms.id === 'about') {
           window.location.href = '/about';
+        } else if (ms.id === 'login') {
+          if (typeof window.startLogin === 'function') {
+            window.startLogin();
+          } else {
+            console.warn('Login function not available yet.');
+          }
         } else {
           console.log(`Menu star clicked: ${ms.id}`);
         }

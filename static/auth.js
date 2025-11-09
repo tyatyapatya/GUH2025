@@ -20,6 +20,24 @@ const logoutBtn = document.getElementById('logout-btn');
 const userInfo = document.getElementById('user-info');
 const userName = document.getElementById('user-name');
 
+// Expose simple login/logout functions for other scripts (e.g., main menu stars)
+window.startLogin = function() {
+  auth.signInWithPopup(provider)
+    .then((result) => {
+      console.log('User logged in:', result.user);
+      // onAuthStateChanged will update UI
+    })
+    .catch((error) => {
+      console.error('Login failed:', error.message);
+    });
+};
+
+window.startLogout = function() {
+  auth.signOut()
+    .then(() => console.log('User signed out'))
+    .catch((error) => console.error('Sign out error:', error));
+};
+
 // This promise resolves when the authentication state is known.
 const onAuthReady = new Promise((resolve) => {
     auth.onAuthStateChanged((user) => {
@@ -54,24 +72,12 @@ const onAuthReady = new Promise((resolve) => {
 
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
-      auth.signInWithPopup(provider)
-        .then((result) => {
-          console.log('User logged in:', result.user);
-          // The onAuthStateChanged listener will handle the UI update.
-        })
-        .catch((error) => {
-          console.error('Login failed:', error.message);
-        });
+      window.startLogin();
     });
 }
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      auth.signOut().then(() => {
-        console.log('User signed out');
-        // The onAuthStateChanged listener will handle the UI update and guest ID.
-      }).catch((error) => {
-        console.error('Sign out error:', error);
-      });
+      window.startLogout();
     });
 }

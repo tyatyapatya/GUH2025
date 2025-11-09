@@ -41,6 +41,7 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   padding: 15px 30px;
   background: rgba(17, 24, 39, 0.95);
   border: 1px solid #374151;

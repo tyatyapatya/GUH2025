@@ -58,6 +58,8 @@ p {
     cursor: crosshair;
 }
 
+
+
 #quitButton {
     position: absolute;
     bottom: 30px;
@@ -221,6 +223,109 @@ p {
     background-color: #005a9e;
 }
 
+/* ===== Midpoint panel (left) ===== */
+#midpoint-panel {
+    position: absolute;
+    bottom: 100px;
+    left: 20px;
+    width: 320px;
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    z-index: 20;
+    color: #e5e7eb;
+    transition: transform 0.35s ease;
+}
+
+#midpoint-panel.hidden {
+    transform: translateX(-105%);
+}
+
+.midpoint-title {
+    font-weight: 600;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    color: #c7d2fe; /* indigo-200 */
+}
+
+#midpoint-content {
+    overflow-y: auto;
+}
+
+.mid-list {
+    padding: 10px 12px;
+}
+
+.mid-section-title {
+    margin: 8px 0 6px;
+    font-size: 0.95rem;
+    color: #93c5fd; /* blue-300 */
+}
+
+.mid-card {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+}
+
+.mid-card img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #111827; /* gray-900 */
+}
+
+.mid-card .mid-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.mid-card .mid-name {
+    color: #e5e7eb;
+    font-size: 0.95rem;
+}
+
+.mid-card .mid-sub {
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+#midpointToggle {
+    position: absolute;
+    bottom: 100px;
+    left: 0;
+    z-index: 21;
+    width: 20px;
+    height: 160px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: #ffffff;
+    cursor: pointer;
+    font-family: 'CamingoCode', monospace;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 1px;
+    backdrop-filter: blur(4px);
+    transition: background 0.25s ease, filter 0.25s ease;
+}
+
+#midpointToggle:hover {
+    background: rgba(0,0,0,0.8);
+    filter: brightness(1.2);
+}
+
 /* ===== Info box ===== */
 #midpoint-info {
     position: absolute;
@@ -242,7 +347,7 @@ p {
 #midpoint-info h3 {
     margin: 0 0 8px;
     font-size: 14px;
-    color: #ffd86b;
+    color: #00aaff;
 }
 
 .place-section {
@@ -252,7 +357,7 @@ p {
 .place-section h4 {
     margin: 8px 0 4px;
     font-size: 13px;
-    color: #ffcc66;
+    color: #00aaff;
     border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
@@ -354,6 +459,7 @@ p {
     font-size: 16px;
     color: #9cc3ff;
     margin: 0;
+    font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 .starfield-stage {
