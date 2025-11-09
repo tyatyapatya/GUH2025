@@ -37,8 +37,8 @@ const onAuthReady = new Promise((resolve) => {
         } else {
             // User is signed out or a guest.
             userId = sessionStorage.getItem('userId');
-            if (!userId || !userId.startsWith('guest_')) {
-                userId = 'guest_' + new Date().getTime() + Math.random().toString(36).substring(2, 15);
+            if (!userId || !userId.startsWith('g_')) {
+                userId = 'g_' + new Date().getTime() + Math.random().toString(36).substring(2, 15);
                 sessionStorage.setItem('userId', userId);
             }
             console.log('User is a guest with temporary id:', userId);
