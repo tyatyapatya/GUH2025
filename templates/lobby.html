@@ -4,17 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cosmic Lobbies</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='entry.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
+    <!-- Use the same starfield styles as the main menu -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div id="stars"></div>
-    <div id="stars2"></div>
-    <div id="stars3"></div>
+    <!-- Starfield background identical to Main Menu (behind content) -->
+    <div class="starfield-overlay" aria-hidden="true" style="z-index:0;">
+        <div class="starfield-bg" id="lobbyStarfieldBg"></div>
+    </div>
+
     <div class="container">
-        <h1>Cosmic Lobbies</h1>
+        <!-- <h1>Cosmic Lobbies</h1> -->
         <div class="buttons">
-            <a href="#" class="btn" id="createLobbyBtn">Open a Lobby</a>
-            <a href="#" class="btn" id="joinLobbyBtn">Join a Lobby</a>
+            <span class="btn-wrap"><a href="#" class="btn" id="createLobbyBtn"><span class="btn-label">open a lobby</span></a></span>
+            <span class="btn-wrap"><a href="#" class="btn" id="joinLobbyBtn"><span class="btn-label">join a lobby</span></a></span>
         </div>
     </div>
 
@@ -76,5 +80,7 @@
             }
         });
     </script>
+    <!-- Generate the same starfield/shooting stars as the main menu -->
+    <script src="{{ url_for('static', filename='lobby-starfield.js') }}"></script>
 </body>
 </html>
