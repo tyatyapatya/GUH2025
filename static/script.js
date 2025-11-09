@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         let reachableMidpointEntity = null;
         let animatedLines = [];
 
-        const resetButton = document.getElementById('resetButton');
+        const quitButton = document.getElementById('quitButton');
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
         // --- Socket.IO Integration ---
@@ -60,7 +60,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         socket.on('lobby_update', (data) => {
             console.log('Lobby update received:', data);
             updateGlobe(data.points, data.geometric_midpoint, data.reachable_midpoint, data.participants);
+            updateChat(data.messages);
         });
+
+        // --- Chat Box Setup ---
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            socket.emit('chat_message', {
+                code: lobbyId,
+                name: userId.slice(0, 6), // Shortened anonymous name
+                text: text
+            });
+            chatInput.value = '';
+        }
+
+        function updateChat(messages) {
+            chatMessages.innerHTML = '';
+            if (!messages || messages.length === 0) {
+                chatMessages.innerHTML = '<p><em>No messages yet.</em></p>';
+                return;
+            }
+
+            messages.forEach((msg, index) => {
+                const p = document.createElement('p');
+                p.innerHTML = `<strong>${msg.name}:</strong> ${msg.text} `;
+
+                const speakBtn = document.createElement('button');
+                speakBtn.textContent = '🔊';
+                speakBtn.style.marginLeft = '6px';
+                speakBtn.addEventListener('click', async () => {
+                    try {
+                        const res = await fetch('/tts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: msg.text })
+                        });
+
+                        if (!res.ok) {
+                            console.error('TTS error:', await res.text());
+                            return;
+                        }
+
+                        const blob = await res.blob();
+                        const audioUrl = URL.createObjectURL(blob);
+                        const audio = new Audio(audioUrl);
+                        audio.play();
+                    } catch (err) {
+                        console.error('Error playing TTS:', err);
+                    }
+                });
+
+                p.appendChild(speakBtn);
+                chatMessages.appendChild(p);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
         socket.on('error', (data) => {
             console.error('Socket error:', data.message);
@@ -80,12 +145,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-        resetButton.addEventListener('click', () => {
-            // This should be handled by the server, but for a client-side reset:
-            // We can request the server to clear points for this user if needed.
-            // For now, we just clear the client's view. A server update will restore it.
-            // A better approach is a 'clear_my_point' event.
-            console.log("Reset button clicked. State will be refreshed on next server update.");
+        quitButton.addEventListener('click', () => {
+            if (lobbyId && userId) {
+                console.log(`User ${userId} leaving lobby ${lobbyId}`);
+                socket.emit('leave_lobby', { code: lobbyId, userId: userId });
+
+                // Disconnect from the socket
+                socket.disconnect();
+
+                // Clear the stored session for this lobby
+                sessionStorage.removeItem(`userId_${lobbyId}`);
+
+                // Optional small delay to let the disconnect propagate
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 300);
+            } else {
+                window.location.href = '/';
+            }
         });
 
         // --- Globe Update Logic ---

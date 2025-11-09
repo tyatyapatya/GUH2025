@@ -32,6 +32,9 @@
         <button onclick="sendMessage()">Send</button>
       </div>
     </div>
+    <div>
+      <button onclick="quitLobby">Quit</button>
+    </div>
   </div>
 
   <script>
@@ -75,6 +78,17 @@
       if (text && lobby_code && user_id) {
         socket.emit('chat_message', {code: lobby_code, userId: user_id, name, text});
         input.value = '';
+      }
+    }
+
+    function quitLobby() {
+      if (lobby_code && user_id) {
+        socket.emit('leave_lobby', {code: lobby_code, userId: user_id});
+        document.getElementById('status').innerText = `Left lobby ${lobby_code}`;
+        lobby_code = null;
+        user_id = null;
+        document.getElementById('current').innerText = '';
+        document.getElementById('messages').innerHTML = '';
       }
     }
 
