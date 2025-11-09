@@ -121,6 +121,31 @@ h1 {
   }
 }
 
+#backButton {
+    position: absolute;
+    bottom: 30px;
+    left: 4%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#backButton img {
+    width: 50%;
+    height: 50%;
+    display: block;
+}
+
+#backButton:hover {
+    filter: brightness(0.7);
+}
+
 /* Respect reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .btn-wrap:hover::before,

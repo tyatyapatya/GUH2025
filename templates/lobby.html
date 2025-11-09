@@ -22,6 +22,10 @@
         </div>
     </div>
 
+    <a id="backButton" title="Back" href="{{ url_for('index') }}">
+            <img src="{{ url_for('serve_image', filename='back_w.svg') }}" alt="Back Button" />
+    </a>
+
     <div id="joinLobbyModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
