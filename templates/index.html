@@ -5,43 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Main Menu - MeetInTheMiddle</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <!-- Reuse lobby button styles for consistent UI (btn / btn-wrap ripple) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}" />
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <style>
     body { background: #030712; } /* dark backdrop */
-    #login-btn {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        padding: 10px 20px;
-        background-color: #4a4a4a;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 1000;
+    /* Top-left auth controls container */
+    #auth-controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      z-index: 1000;
     }
-    #user-info {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        padding: 10px 20px;
-        background-color: #4a4a4a;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 1000;
-        display: none;
-    }
+    /* Hide user-info group by default; auth.js toggles it */
+    #user-info { display: none; }
+    /* Make the username look like a non-clickable pill button */
+    #user-name.btn { cursor: default; }
   </style>
 </head>
 <body>
-  <div id="user-info">
-    <span id="user-name"></span>
-    <button id="logout-btn">Logout</button>
+  <!-- Auth Controls: login or, when signed-in, username + logout -->
+  <div id="auth-controls">
+    <div id="user-info">
+      <span class="btn-wrap">
+        <span class="btn" id="user-name" title="Signed in user"></span>
+      </span>
+      <span class="btn-wrap">
+        <button class="btn" id="logout-btn"><span class="btn-label">logout</span></button>
+      </span>
+    </div>
   </div>
-  <button id="login-btn">Login with Google</button>
   <div class="starfield-overlay" id="starfieldMenu">
     <div class="starfield-bg" id="starfieldBg"></div>
     <div class="starfield-header">
