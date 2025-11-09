@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             animation: false,
         });
 
-        viewer.scene.globe.enableLighting = true;
+        viewer.scene.globe.enableLighting = false;
 
         const listener = viewer.scene.globe.tileLoadProgressEvent.addEventListener(function (queueLength) {
             if (queueLength === 0) {
