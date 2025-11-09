@@ -57,8 +57,8 @@ def get_city_data(city, midpoint=None, reachable_midpoint=None):
     """
     Get hotels and attractions for a given city.
     """
-    hotels = get_places(city, "local hotel", location_bias=reachable_midpoint)
-    attractions = get_places(city, "local tourist attraction", location_bias=reachable_midpoint)
+    hotels = get_places(city, "hotel nearby", location_bias=reachable_midpoint)
+    attractions = get_places(city, "closest local tourist attraction", location_bias=reachable_midpoint)
 
     # The new API can return details in the search result, so we don't need a separate details call.
     hotel_details = []
