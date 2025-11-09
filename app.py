@@ -11,6 +11,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from places_api import get_city_data
 import threading
+from genai_module import get_suggestions
 
 load_dotenv()
 
@@ -172,8 +173,28 @@ def get_places_data_async(lobby_code, city_name, midpoint, reachable_midpoint):
         if data:
             print(f"Data for {city_name}: {data}")
             # get_city_data returns a JSON string, so we parse it.
-            socketio.emit('travel_info_update', {'midpoint_details': json.loads(data)}, room=lobby_code)
+            parsed_data = json.loads(data)
+            
+            # Store the data on the server-side lobby object
+            if lobby_code in LOBBIES:
+                LOBBIES[lobby_code]['midpoint_details'] = parsed_data
+
+            socketio.emit('travel_info_update', {'midpoint_details': parsed_data}, room=lobby_code)
             print(f"Sent travel info update for lobby {lobby_code}")
+
+            # After sending places, send a prompt from the AI
+            if lobby_code in LOBBIES:
+                initial_ai_message = {
+                    'name': 'AI Assistant',
+                    'text': "I see some places have been found! Let me know your preferences, and I can suggest the best spots for your group."
+                }
+                if 'messages' not in LOBBIES[lobby_code]:
+                    LOBBIES[lobby_code]['messages'] = []
+                
+                # Avoid sending duplicate messages
+                if not any(msg['name'] == 'AI Assistant' and "preferences" in msg['text'] for msg in LOBBIES[lobby_code]['messages']):
+                    LOBBIES[lobby_code]['messages'].append(initial_ai_message)
+                    emit_lobby_update(lobby_code)
 
 
 def schedule_lobby_archive(lobby_code):
@@ -365,8 +386,31 @@ def on_chat(data):
         return
     if lobby_code not in LOBBIES:
         return
+    
+    lobby = LOBBIES[lobby_code]
     message = {'name': name, 'text': text}
-    LOBBIES[lobby_code].setdefault('messages', []).append(message)
+    lobby.setdefault('messages', []).append(message)
+
+    # Check if this message is a response to the AI's prompt for preferences
+    messages = lobby.get('messages', [])
+    if len(messages) > 1:
+        last_message = messages[-2]  # The one before the user's message
+        if last_message.get('name') == 'AI Assistant' and "preferences" in last_message.get('text', ''):
+            # This is a preference message from the user
+            user_preferences = text
+            places_data = lobby.get('midpoint_details', {})
+            
+            # Run suggestion logic in a background thread to not block
+            def get_suggestion_async():
+                with app.app_context():
+                    suggestion = get_suggestions(user_preferences, places_data)
+                    ai_response_message = {'name': 'AI Assistant', 'text': suggestion}
+                    lobby.setdefault('messages', []).append(ai_response_message)
+                    emit_lobby_update(lobby_code)
+            
+            socketio.start_background_task(get_suggestion_async)
+            return  # Return early to avoid double-sending the update
+
     emit_lobby_update(lobby_code)
 
 
