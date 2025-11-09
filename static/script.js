@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         socket.on('lobby_update', (data) => {
             console.log('Lobby update received:', data);
-            updateGlobe(data.points, data.geometric_midpoint, data.reachable_midpoint, data.participants);
+            updateGlobe(data.points, data.geometric_midpoint, data.reachable_midpoint, data.participants, data.animation);
             updateChat(data.messages);
         });
 
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // --- Globe Update Logic ---
-        function updateGlobe(points, geometricMidpoint, reachableMidpoint, participantIds) {
+        function updateGlobe(points, geometricMidpoint, reachableMidpoint, participantIds, animation) {
             // Clear existing entities that are not in the new participants list
             const currentPointIds = Object.keys(points);
             const entitiesToRemove = [];
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Draw lines from each participant to the midpoint
                 pointEntities.forEach(entity => {
-                    animateLine(entity.position.getValue(viewer.clock.currentTime), midpointPosition, viewer, true); // Dotted lines
+                    animateLine(entity.position.getValue(viewer.clock.currentTime), midpointPosition, viewer, true, animation); // Dotted lines
                 });
             }
 
@@ -384,18 +384,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Draw lines from each participant to the midpoint
                 pointEntities.forEach(entity => {
-                    animateLine(entity.position.getValue(viewer.clock.currentTime), midpointPosition, viewer, false); // Filled lines
+                    animateLine(entity.position.getValue(viewer.clock.currentTime), midpointPosition, viewer, false, animation); // Filled lines
                 });
             }
         }
 
-        function animateLine(startPoint, endPoint, viewer, dotted = false) {
+        function animateLine(startPoint, endPoint, viewer, dotted = false, animate = true) {
             const duration = 2000; // 2 seconds
             const startTime = Cesium.JulianDate.now();
 
             const lineEntity = viewer.entities.add({
                 polyline: {
                     positions: new Cesium.CallbackProperty(() => {
+                        if (!animate) {
+                            return [startPoint, endPoint];
+                        }
                         const elapsedTime = Cesium.JulianDate.secondsDifference(Cesium.JulianDate.now(), startTime);
                         const t = Math.min(elapsedTime / (duration / 1000), 1.0);
                         
