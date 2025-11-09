@@ -32,9 +32,10 @@
             <div id="chat-messages"></div>
             <div id="chat-input-container">
                 <input id="chat-input" type="text" placeholder="Type a message..." autocomplete="off">
-                <button id="send-button">Send</button>
+                <button id="send-button">send</button>
             </div>
         </div>
+        <button id="chatToggle" type="button" aria-label="Hide chat" title="Hide chat">‹</button>
         
         <button id="quitButton" type="button" title="Quit">
             <img src="{{ url_for('serve_image', filename='quit_w.svg') }}" alt="Quit Button" />

@@ -135,6 +135,45 @@ p {
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     z-index: 20;
+    transition: transform 0.35s ease;
+}
+
+#chat-container.hidden {
+    transform: translateX(105%);
+}
+
+#chatToggle {
+    position: absolute;
+    bottom: 100px;
+    right: 0;
+    z-index: 21;
+    width: 20px;
+    height: 160px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    color: #ffffff;
+    cursor: pointer;
+    font-family: 'CamingoCode', monospace;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 1px;
+    backdrop-filter: blur(4px);
+    transition: background 0.25s ease, filter 0.25s ease;
+}
+
+#chatToggle:hover {
+    background: rgba(0,0,0,0.8);
+    filter: brightness(1.2);
+}
+
+#chatToggle.collapsed { /* keep class but no size/pos change to remain constant */
+    letter-spacing: 0;
 }
 
 #chat-messages {
@@ -142,7 +181,8 @@ p {
     overflow-y: auto;
     padding: 10px;
     color: white;
-    font-size: 0.9em;
+    font-size: 1em;
+    filter: brightness(1.5);
 }
 
 #chat-messages p {
@@ -162,15 +202,19 @@ p {
     padding: 10px;
     background: transparent;
     color: white;
+    font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
 }
 
 #send-button {
-    background-color: #0078d4;
+    background-color:#00aaff;
     color: white;
     border: none;
     padding: 10px 14px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
 }
 
 #send-button:hover {

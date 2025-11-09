@@ -64,9 +64,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // --- Chat Box Setup ---
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    const chatContainer = document.getElementById('chat-container');
+    const chatToggle = document.getElementById('chatToggle');
 
         sendButton.addEventListener('click', sendMessage);
         chatInput.addEventListener('keypress', (e) => {
@@ -83,6 +85,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                 text: text
             });
             chatInput.value = '';
+        }
+
+        // Chat hide/show toggle
+        if (chatToggle && chatContainer) {
+            const setToggleState = (hidden) => {
+                // Keep size and position constant; only swap arrow and accessibility labels
+                if (hidden) {
+                    chatToggle.textContent = '‹'; // show
+                    chatToggle.setAttribute('aria-label', 'Show chat');
+                    chatToggle.setAttribute('title', 'Show chat');
+                    chatToggle.classList.add('collapsed');
+                } else {
+                    chatToggle.textContent = '›'; // hide
+                    chatToggle.setAttribute('aria-label', 'Hide chat');
+                    chatToggle.setAttribute('title', 'Hide chat');
+                    chatToggle.classList.remove('collapsed');
+                }
+            };
+
+            // Initialize from sessionStorage (persist per-lobby)
+            const hiddenKey = `chatHidden_${lobbyId}`;
+            const initialHidden = sessionStorage.getItem(hiddenKey) === '1';
+            if (initialHidden) chatContainer.classList.add('hidden');
+            setToggleState(initialHidden);
+
+            chatToggle.addEventListener('click', () => {
+                const nowHidden = !chatContainer.classList.toggle('hidden');
+                // classList.toggle returns true if element now has the class; we want hidden state
+                const isHidden = chatContainer.classList.contains('hidden');
+                sessionStorage.setItem(hiddenKey, isHidden ? '1' : '0');
+                setToggleState(isHidden);
+            });
         }
 
         function updateChat(messages) {
