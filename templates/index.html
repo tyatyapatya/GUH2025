@@ -5,11 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Main Menu - MeetInTheMiddle</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <style>
     body { background: #030712; } /* dark backdrop */
+    #login-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        background-color: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+    }
+    #user-info {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        background-color: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+        display: none;
+    }
   </style>
 </head>
 <body>
+  <div id="user-info">
+    <span id="user-name"></span>
+    <button id="logout-btn">Logout</button>
+  </div>
+  <button id="login-btn">Login with Google</button>
   <div class="starfield-overlay" id="starfieldMenu">
     <div class="starfield-bg" id="starfieldBg"></div>
     <div class="starfield-header">
@@ -19,5 +51,6 @@
     <div class="starfield-stage" id="menuStarsStage"></div>
   </div>
   <script src="{{ url_for('static', filename='main-menu.js') }}"></script>
+  <script src="{{ url_for('static', filename='auth.js') }}"></script>
 </body>
 </html>

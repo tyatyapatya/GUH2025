@@ -392,6 +392,5 @@ def text_to_speech():
     # Send back audio as a playable file
     return send_file(BytesIO(response.content), mimetype='audio/mpeg')
 
-
 if __name__ == '__main__':
     socketio.run(app, debug=True)
