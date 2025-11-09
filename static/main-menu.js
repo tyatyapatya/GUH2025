@@ -1,5 +1,12 @@
 // Main Menu Starfield (standalone)
 (function() {
+  // Fade-in the overlay so stars appear gradually
+  window.requestAnimationFrame(() => {
+    const overlay = document.querySelector('.starfield-overlay');
+    if (overlay) {
+      setTimeout(() => overlay.classList.add('revealed'), 50);
+    }
+  });
   const starfieldBg = document.getElementById('starfieldBg');
   const menuStarsStage = document.getElementById('menuStarsStage');
   const STAR_COUNT = 200;
@@ -24,11 +31,11 @@
   }
 
   const menuStars = [
-    { id: 'new-meeting', x: 50, y: 40, color: '#60a5fa', glowColor: '#3b82f6', label: 'Find Meeting Point', description: 'Add locations and find the perfect middle ground', icon: '📍' },
-    { id: 'saved-meetings', x: 30, y: 55, color: '#a78bfa', glowColor: '#8b5cf6', label: 'Saved Meetings', description: 'View your previous meeting locations', icon: '⏱️' },
-    { id: 'group-meeting', x: 70, y: 55, color: '#34d399', glowColor: '#10b981', label: 'Group Meeting', description: 'Coordinate with multiple people', icon: '👥' },
-    { id: 'settings', x: 40, y: 70, color: '#fbbf24', glowColor: '#f59e0b', label: 'Settings', description: 'Customize your preferences', icon: '⚙️' },
-    { id: 'about', x: 60, y: 70, color: '#f472b6', glowColor: '#ec4899', label: 'About', description: 'Learn more about this tool', icon: 'ℹ️' },
+    { id: 'new-meeting', x: 50, y: 35, color: '#60a5fa', glowColor: '#3b82f6', label: 'Find Meeting Point', description: 'Add locations and find the perfect middle ground', icon: '📍' },
+    { id: 'saved-meetings', x: 35, y: 35, color: '#a78bfa', glowColor: '#8b5cf6', label: 'Saved Meetings', description: 'View your previous meeting locations', icon: '⏱️' },
+    // { id: 'group-meeting', x: 70, y: 55, color: '#34d399', glowColor: '#10b981', label: 'Group Meeting', description: 'Coordinate with multiple people', icon: '👥' },
+    // { id: 'settings', x: 40, y: 70, color: '#fbbf24', glowColor: '#f59e0b', label: 'Settings', description: 'Customize your preferences', icon: '⚙️' },
+    { id: 'about', x: 65, y: 35, color: '#f472b6', glowColor: '#ec4899', label: 'About', description: 'Learn more about this tool', icon: 'ℹ️' },
   ];
 
   function createMenuStars() {
@@ -74,7 +81,6 @@
         core.style.boxShadow = `0 0 20px ${ms.color}`;
       });
 
-      // Click handler: route to map.html for the main action
       btn.addEventListener('click', () => {
         if (ms.id === 'new-meeting') {
           window.location.href = '/lobby';
@@ -97,15 +103,49 @@
   }
 
   function createShootingStars() {
-    for (let i = 0; i < 3; i++) {
+    const COUNT = 3;
+    for (let i = 0; i < COUNT; i++) {
       const s = document.createElement('div');
       s.className = 'shooting-star';
-      const left = Math.random() * 100;
-      const top = Math.random() * 50;
-      s.style.left = left + '%';
-      s.style.top = top + '%';
-      s.style.animationDelay = (i * 4) + 's';
+      s.style.animation = 'none'; // disable uniform CSS animation
       starfieldBg.appendChild(s);
+
+      const launchStar = (el) => {
+        // Random starting position (upper half), size 1-4px
+        const left = Math.random() * 100;
+        const top = Math.random() * 50;
+        const size = 1 + Math.random() * 3; // px
+        el.style.left = left + '%';
+        el.style.top = top + '%';
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+
+        // Random trajectory
+        const distance = 200 + Math.random() * 400; // 200-600px
+        const angleDeg = 20 + Math.random() * 50;   // 20-70°
+        const angle = angleDeg * Math.PI / 180;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+
+        // Random timing
+        const duration = 1200 + Math.random() * 2000; // 1.2s - 3.2s
+        const delay = Math.random() * 8000; // up to 8s pause before each run
+
+        setTimeout(() => {
+          const anim = el.animate([
+            { transform: 'translate(0,0)', opacity: 0 },
+            { offset: 0.10, opacity: 1 },
+            { transform: `translate(${dx}px, ${dy}px)`, opacity: 0 }
+          ], {
+            duration,
+            easing: 'ease-out',
+            fill: 'forwards'
+          });
+          anim.onfinish = () => launchStar(el); // recurse with new randoms
+        }, delay);
+      };
+
+      launchStar(s);
     }
   }
 
