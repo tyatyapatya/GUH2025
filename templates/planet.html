@@ -36,12 +36,21 @@
             </div>
         </div>
         <button id="chatToggle" type="button" aria-label="Hide chat" title="Hide chat">‹</button>
+        <div id="midpoint-info">
+            <h3>Midpoint: <span id="midpoint-city">–</span></h3>
+            <div id="midpoint-content">
+                <p><em>Waiting for midpoint data...</em></p>
+            </div>
+        </div>
         
         <button id="quitButton" type="button" title="Quit">
             <img src="{{ url_for('serve_image', filename='quit_w.svg') }}" alt="Quit Button" />
         </button>
         <div id="loadingIndicator" class="loading-indicator"></div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="{{ url_for('static', filename='auth.js') }}"></script>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>

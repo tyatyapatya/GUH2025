@@ -1,4 +1,6 @@
+import os
+
 wsgi_app = "app:app"
 worker_class = 'eventlet'
 workers = 1
-bind = '0.0.0.0:5000'
+bind = f"0.0.0.0:{os.environ.get('PORT', 5000)}"
