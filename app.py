@@ -29,7 +29,7 @@ LOBBIES = {}
 ARCHIVE_DIR = "archived_lobbies"
 ARCHIVE_TIMERS = {}  # Track pending archive timers
 ARCHIVE_DELAY = 20  # seconds to wait before archiving inactive lobbies
-ELEVENLABS_API_KEY = "sk_df68b7e3d3bd103c50d67872fe0c5a148c43f26c3083dfdf"
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
 os.makedirs(ARCHIVE_DIR, exist_ok=True)
 
 def generate_lobby_code(length=8):
@@ -62,7 +62,8 @@ def create_lobby():
     lobby_code = generate_lobby_code()
     LOBBIES[lobby_code] = {
         'participants': {},
-        'points': {}
+        'points': {},
+        'left_participants': {}
     }
     print(f"Lobby created: {lobby_code}. Current lobbies: {list(LOBBIES.keys())}")
     return jsonify({'code': lobby_code})
@@ -85,7 +86,7 @@ def on_join(data):
     join_room(lobby_code)
     # Store the session ID to identify the user upon disconnect
     LOBBIES[lobby_code]['participants'][user_id] = {'id': user_id, 'sid': request.sid}
-    
+
     print(f"User {user_id} joined lobby {lobby_code}")
 
     # Cancel any pending archive
@@ -111,6 +112,8 @@ def on_leave(data):
 
     # Remove user completely
     if user_id in lobby['participants']:
+        lobby['left_participants'][user_id] = lobby['participants'][user_id]
+        print(lobby['left_participants'])
         del lobby['participants'][user_id]
         print(f"User {user_id} removed from lobby {lobby_code}.")
     if user_id in lobby['points']:
@@ -138,31 +141,6 @@ def on_add_point(data):
         LOBBIES[lobby_code]['points'][user_id] = point
         print(f"Point added in lobby {lobby_code} by {user_id}: {point}")
         emit_lobby_update(lobby_code)
-
-@socketio.on('disconnect')
-def on_disconnect():
-    """Handles a user disconnecting."""
-    disconnected_user_sid = request.sid
-    for lobby_code, lobby in LOBBIES.items():
-        # Find the user associated with the disconnected session
-        user_id_to_update = None
-        for user_id, user_info in lobby['participants'].items():
-            if user_info.get('sid') == disconnected_user_sid:
-                user_id_to_update = user_id
-                break
-
-        if user_id_to_update:
-            print(f"User {user_id_to_update} with SID {disconnected_user_sid} disconnected from lobby {lobby_code}. Their point will be preserved.")
-            if 'sid' in lobby['participants'][user_id_to_update]:
-                 lobby['participants'][user_id_to_update]['sid'] = None
-
-            emit_lobby_update(lobby_code)
-
-            all_disconnected = all(u.get('sid') is None for u in lobby['participants'].values())
-            if all_disconnected:
-                print(f"Lobby {lobby_code} is now inactive — scheduling archive in {ARCHIVE_DELAY} seconds.")
-                schedule_lobby_archive(lobby_code)
-            break
 
 
 def get_places_data_async(lobby_code, city_name, midpoint, reachable_midpoint):

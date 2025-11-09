@@ -132,6 +132,103 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert(`Error: ${data.message}`);
         });
 
+        socket.on('travel_info_update', (data) => {
+            console.log('Midpoint details update:', data);
+            updateMidpointInfo(data.midpoint_details);
+        });
+
+        function updateMidpointInfo(details) {
+            const cityElem = document.getElementById('midpoint-city');
+            const container = document.getElementById('midpoint-content');
+
+            if (!details || Object.keys(details).length === 0) {
+                cityElem.textContent = '–';
+                container.innerHTML = '<p><em>No midpoint details available.</em></p>';
+                return;
+            }
+
+            cityElem.textContent = details.city || 'Unknown';
+
+            const sections = [];
+
+            // --- Helper to build each place card ---
+            function createPlaceCard(place) {
+                const card = document.createElement('div');
+                card.classList.add('place-card');
+
+                const img = document.createElement('img');
+                img.src = place.photo_url || 'https://via.placeholder.com/60x60?text=No+Image';
+                img.alt = place.name?.text || 'Place';
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.classList.add('place-details');
+
+                const nameEl = document.createElement('div');
+                nameEl.classList.add('place-name');
+                nameEl.textContent = place.name?.text || 'Unnamed place';
+
+                const ratingEl = document.createElement('div');
+                ratingEl.classList.add('place-rating');
+                if (place.rating) {
+                    ratingEl.textContent = `⭐ ${place.rating} (${place.userRatingCount || 0})`;
+                }
+
+                const distanceEl = document.createElement('div');
+                distanceEl.classList.add('place-distance');
+                if (place.distance_km) {
+                    distanceEl.textContent = `${place.distance_km.toFixed(1)} km away`;
+                }
+
+                const linkEl = document.createElement('a');
+                linkEl.classList.add('place-link');
+                linkEl.href = place.googleMapsUri;
+                linkEl.target = '_blank';
+                linkEl.textContent = 'View on Google Maps';
+
+                detailsDiv.append(nameEl, ratingEl, distanceEl, linkEl);
+                card.append(img, detailsDiv);
+
+                return card;
+            }
+
+            // --- Build hotels section ---
+            if (Array.isArray(details.hotels) && details.hotels.length > 0) {
+                const hotelsDiv = document.createElement('div');
+                hotelsDiv.classList.add('place-section');
+
+                const header = document.createElement('h4');
+                header.textContent = 'Nearby Hotels';
+                hotelsDiv.appendChild(header);
+
+                details.hotels.slice(0, 15).forEach(hotel => {
+                    hotelsDiv.appendChild(createPlaceCard(hotel));
+                });
+                sections.push(hotelsDiv);
+            }
+
+            // --- Build attractions section ---
+            if (Array.isArray(details.attractions) && details.attractions.length > 0) {
+                const attractionsDiv = document.createElement('div');
+                attractionsDiv.classList.add('place-section');
+
+                const header = document.createElement('h4');
+                header.textContent = 'Nearby Attractions';
+                attractionsDiv.appendChild(header);
+
+                details.attractions.slice(0, 15).forEach(attraction => {
+                    attractionsDiv.appendChild(createPlaceCard(attraction));
+                });
+                sections.push(attractionsDiv);
+            }
+
+            if (sections.length === 0) {
+                container.innerHTML = '<p><em>No hotels or attractions found.</em></p>';
+            } else {
+                container.innerHTML = '';
+                sections.forEach(section => container.appendChild(section));
+            }
+        }
+
         // --- Globe Interaction ---
         handler.setInputAction((event) => {
             const cartesian = viewer.camera.pickEllipsoid(event.position, viewer.scene.globe.ellipsoid);
