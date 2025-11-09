@@ -28,7 +28,14 @@
         <div id="lobby-code-container">
             Lobby Code: <span id="lobby-code"></span>
         </div>
-        <button id="resetButton">Reset</button>
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <div id="chat-input-container">
+                <input id="chat-input" type="text" placeholder="Type a message..." autocomplete="off">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+        <button id="quitButton">Quit</button>
         <div id="loadingIndicator" class="loading-indicator"></div>
     </div>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>

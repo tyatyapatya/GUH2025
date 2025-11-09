@@ -57,7 +57,7 @@ p {
     cursor: crosshair;
 }
 
-#resetButton {
+#quitButton {
     position: absolute;
     bottom: 30px;
     left: 50%;
@@ -73,7 +73,7 @@ p {
     transition: background-color 0.3s ease;
 }
 
-#resetButton:hover {
+#quitButton:hover {
     background-color: #005a9e;
 }
 
@@ -113,6 +113,62 @@ p {
     font-weight: bold;
     letter-spacing: 2px;
     color: #4dffff;
+}
+
+/* ===== Chat Box ===== */
+#chat-container {
+    position: absolute;
+    bottom: 100px;
+    right: 20px;
+    width: 300px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    z-index: 20;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    color: white;
+    font-size: 0.9em;
+}
+
+#chat-messages p {
+    margin: 6px 0;
+}
+
+#chat-input-container {
+    display: flex;
+    background: rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+#chat-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px;
+    background: transparent;
+    color: white;
+}
+
+#send-button {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#send-button:hover {
+    background-color: #005a9e;
 }
 
 /* ============ Starfield Menu Overlay ============ */
