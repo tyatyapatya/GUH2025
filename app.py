@@ -29,7 +29,7 @@ LOBBIES = {}
 ARCHIVE_DIR = "archived_lobbies"
 ARCHIVE_TIMERS = {}  # Track pending archive timers
 ARCHIVE_DELAY = 20  # seconds to wait before archiving inactive lobbies
-ELEVENLABS_API_KEY = "sk_df68b7e3d3bd103c50d67872fe0c5a148c43f26c3083dfdf"
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
 os.makedirs(ARCHIVE_DIR, exist_ok=True)
 
 def generate_lobby_code(length=8):
@@ -62,7 +62,8 @@ def create_lobby():
     lobby_code = generate_lobby_code()
     LOBBIES[lobby_code] = {
         'participants': {},
-        'points': {}
+        'points': {},
+        'left_participants': {}
     }
     print(f"Lobby created: {lobby_code}. Current lobbies: {list(LOBBIES.keys())}")
     return jsonify({'code': lobby_code})
@@ -85,7 +86,7 @@ def on_join(data):
     join_room(lobby_code)
     # Store the session ID to identify the user upon disconnect
     LOBBIES[lobby_code]['participants'][user_id] = {'id': user_id, 'sid': request.sid}
-    
+
     print(f"User {user_id} joined lobby {lobby_code}")
 
     # Cancel any pending archive
@@ -111,6 +112,7 @@ def on_leave(data):
 
     # Remove user completely
     if user_id in lobby['participants']:
+        lobby['left_participants'][user_id] = lobby['participants'][user_id]
         del lobby['participants'][user_id]
         print(f"User {user_id} removed from lobby {lobby_code}.")
     if user_id in lobby['points']:
