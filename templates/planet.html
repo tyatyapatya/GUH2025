@@ -42,6 +42,10 @@
             </div>
         </div>
         <button id="quitButton">Quit</button>
+        
+        <button id="quitButton" type="button" title="Quit">
+            <img src="{{ url_for('serve_image', filename='quit_w.svg') }}" alt="Quit Button" />
+        </button>
         <div id="loadingIndicator" class="loading-indicator"></div>
     </div>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
