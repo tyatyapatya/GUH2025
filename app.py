@@ -24,6 +24,11 @@ socketio = SocketIO(app)
 def serve_font(filename):
     return send_from_directory('fonts', filename)
 
+# Serve images from top-level 'img' directory (outside default 'static')
+@app.route('/img/<path:filename>')
+def serve_image(filename):
+    return send_from_directory('img', filename)
+
 # In-memory storage for lobbies
 LOBBIES = {}
 ARCHIVE_DIR = "archived_lobbies"
