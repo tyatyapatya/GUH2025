@@ -23,6 +23,7 @@ html, body {
     overflow: hidden; /* Prevents scrollbars */
     font-family: 'CamingoCode', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     color: #333;
+    background: black;
 }
 
 #header-overlay {
@@ -60,21 +61,26 @@ p {
 #quitButton {
     position: absolute;
     bottom: 30px;
-    left: 50%;
+    left: 4%;
     transform: translateX(-50%);
     z-index: 10;
-    padding: 12px 24px;
-    font-size: 1em;
-    color: white;
-    background-color: #0078d4;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    background: transparent;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+}
+
+#quitButton img {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 #quitButton:hover {
-    background-color: #005a9e;
+    filter: brightness(0.7);
 }
 
 .loading-indicator {

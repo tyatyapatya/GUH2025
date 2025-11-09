@@ -17,18 +17,24 @@
     <div class="container">
         <!-- <h1>Cosmic Lobbies</h1> -->
         <div class="buttons">
-            <span class="btn-wrap"><a href="#" class="btn" id="createLobbyBtn"><span class="btn-label">open a lobby</span></a></span>
-            <span class="btn-wrap"><a href="#" class="btn" id="joinLobbyBtn"><span class="btn-label">join a lobby</span></a></span>
+            <span class="btn-wrap"><a href="#" class="btn" id="createLobbyBtn"><span class="btn-label">open lobby</span></a></span>
+            <span class="btn-wrap"><a href="#" class="btn" id="joinLobbyBtn"><span class="btn-label">join lobby</span></a></span>
         </div>
     </div>
+
+    <a id="backButton" title="Back" href="{{ url_for('index') }}">
+            <img src="{{ url_for('serve_image', filename='back_w.svg') }}" alt="Back Button" />
+    </a>
 
     <div id="joinLobbyModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2>Join a Lobby</h2>
-            <p>Enter the 8-digit code to join.</p>
+            <h2>Join Lobby</h2>
+            <p>enter the 8-symbol code to join</p>
             <input type="text" id="lobbyCodeInput" placeholder="Enter code..." maxlength="8">
-            <button id="joinLobbySubmit">Join</button>
+            <span class="btn-wrap">
+              <button class="btn" id="joinLobbySubmit">Join</button>
+            </span>
         </div>
     </div>
 
