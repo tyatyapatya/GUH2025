@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Lobbies</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lobby.css') }}">
+    <!-- Use the same starfield styles as the main menu -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .gif-wrapper { max-width: 540px; margin: 40px auto 20px; }
+        .gif-wrapper .tenor-gif-embed { width:100%; }
+    </style>
+</head>
+<body>
+    <!-- Starfield background identical to Main Menu (behind content) -->
+    <div class="starfield-overlay" aria-hidden="true" style="z-index:0;">
+        <div class="starfield-bg" id="lobbyStarfieldBg"></div>
+    </div>
+    <div class="gif-wrapper">
+        <div class="tenor-gif-embed" data-postid="25268165" data-share-method="host" data-aspect-ratio="1.34454" data-width="540px"><a href="https://tenor.com/view/fortnite-dance-pug-gif-25268165">Fortnite Dance Pug GIF</a>from <a href="https://tenor.com/search/fortnite+dance-gifs">Fortnite Dance GIFs</a></div>
+    </div>
+    <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+
+    <a id="backButton" title="Back" href="{{ url_for('index') }}">
+            <img src="{{ url_for('serve_image', filename='back_w.svg') }}" alt="Back Button" />
+    </a>
+
+    <!-- Generate the same starfield/shooting stars as the main menu -->
+    <script src="{{ url_for('static', filename='lobby-starfield.js') }}"></script>
+</body>
+</html>

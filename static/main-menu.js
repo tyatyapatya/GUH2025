@@ -84,6 +84,8 @@
       btn.addEventListener('click', () => {
         if (ms.id === 'new-meeting') {
           window.location.href = '/lobby';
+        } else if (ms.id === 'about') {
+          window.location.href = '/about';
         } else {
           console.log(`Menu star clicked: ${ms.id}`);
         }

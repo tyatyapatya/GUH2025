@@ -35,7 +35,16 @@
                 <button id="send-button">Send</button>
             </div>
         </div>
-        <button id="quitButton">Quit</button>
+        <div id="midpoint-info">
+            <h3>Midpoint: <span id="midpoint-city">–</span></h3>
+            <div id="midpoint-content">
+                <p><em>Waiting for midpoint data...</em></p>
+            </div>
+        </div>
+        
+        <button id="quitButton" type="button" title="Quit">
+            <img src="{{ url_for('serve_image', filename='quit_w.svg') }}" alt="Quit Button" />
+        </button>
         <div id="loadingIndicator" class="loading-indicator"></div>
     </div>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
