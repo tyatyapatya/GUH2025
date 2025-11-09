@@ -379,25 +379,30 @@ def on_chat(data):
     message = {'name': name, 'text': text}
     lobby.setdefault('messages', []).append(message)
 
-    # Check if this message is a response to the AI's prompt for preferences
+    # Check if this message is a response to the AI's prompt for preferences or a direct mention
     messages = lobby.get('messages', [])
-    if len(messages) > 1:
-        last_message = messages[-2]  # The one before the user's message
+    is_ai_related = False
+
+    if "@ai" in text.lower():
+        is_ai_related = True
+    elif len(messages) > 1:
+        last_message = messages[-2]
         if last_message.get('name') == 'AI Assistant' and "preferences" in last_message.get('text', ''):
-            # This is a preference message from the user
-            user_preferences = text
-            places_data = lobby.get('midpoint_details', {})
-            
-            # Run suggestion logic in a background thread to not block
-            def get_suggestion_async():
-                with app.app_context():
-                    suggestion = get_suggestions(user_preferences, places_data)
-                    ai_response_message = {'name': 'AI Assistant', 'text': suggestion}
-                    lobby.setdefault('messages', []).append(ai_response_message)
-                    emit_lobby_update(lobby_code, animation=False)
-            
-            socketio.start_background_task(get_suggestion_async)
-            return  # Return early to avoid double-sending the update
+            is_ai_related = True
+
+    if is_ai_related:
+        user_preferences = text
+        places_data = lobby.get('midpoint_details', {})
+        
+        def get_suggestion_async():
+            with app.app_context():
+                suggestion = get_suggestions(user_preferences, places_data)
+                ai_response_message = {'name': 'AI Assistant', 'text': suggestion}
+                lobby.setdefault('messages', []).append(ai_response_message)
+                emit_lobby_update(lobby_code, animation=False)
+        
+        socketio.start_background_task(get_suggestion_async)
+        return
 
     emit_lobby_update(lobby_code, animation=False)
 
